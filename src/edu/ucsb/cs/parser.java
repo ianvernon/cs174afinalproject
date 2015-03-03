@@ -26,7 +26,7 @@ public static void main() {
         ResultSet rs = null;
 
         String url = "jdbc:mysql://localhost:3306/dbname";
-        String user = "";
+        String user = "root";
         String password = "";
 
         Class.forName("com.mysql.jdbc.Driver");
