@@ -31,8 +31,8 @@ public class Patient
         this.providerId = providerid;
         this.xmlCreationdate = xmlCreationDate;
         this.guardianNo = guardianNo;
-            this.payerID = payerID;
-            this.policyType = policyType;
-            this.purpose = purpose;
+        this.payerID = payerID;
+        this.policyType = policyType;
+        this.purpose = purpose;
     }
 }
