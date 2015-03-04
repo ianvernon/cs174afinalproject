@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 
@@ -15,17 +17,22 @@ public class Main {
 
     public static void main(String[] args)
     {
-	    grabData();
+	    grabData("healthmessagesexchange2", "messages", "HealthInformationSystem");
 
     }
+
+    /** returns a formatted string with the current date and time
+     *
+     * @return  string containing date in Month/Day/Year Hour:Day AM/PM format
+     */
     public static String getCurrentDate()
     {
-        Calendar c = Calendar.getInstance();
+        /*Calendar c = Calendar.getInstance();
         int currentYear = c.get(Calendar.YEAR);
-        int currentMonth = c.get(Calendar.MONTH);
-        int currentDay = c.get(Calendar.DAY_OF_MONTH);
-
-        String s = currentYear + "-"+ currentMonth + "-" + currentDay;
+        int currentMonth = c.get(Calendar.MONTH)+1;
+        int currentDay = c.get(Calendar.DAY_OF_MONTH);*/
+        DateFormat timeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+        String s = timeFormat.format(new java.util.Date());
         return s;
     }
     public void patientRead()
@@ -52,7 +59,14 @@ public class Main {
     {
 
     }
-    public static void grabData()
+
+    /**
+     * grabs data from sourceTable located in sourceDb, and inserts it into destDb
+     * @param sourceDb - name of source database which we will be grabbing data from
+     * @param sourceTable - name of table within source database that we'll be grabbing data from
+     * @param destDb - name of the database that we'll be inserting data into
+     */
+    public static void grabData(String sourceDb, String sourceTable, String destDb)
     {
         System.out.println("Hello world!!!!!");
 
@@ -66,20 +80,21 @@ public class Main {
         {
             Class.forName("com.mysql.jdbc.Driver");
             sourceConnect = DriverManager.getConnection(
-                    "jdbc:mysql://localhost/healthmessagesexchange2?"+
+                    "jdbc:mysql://localhost/" + sourceDb + "?"+
                             "user=root&password="
             );
 
             statement = sourceConnect.createStatement();
 
-            resultSet = statement.executeQuery("select * from healthmessagesexchange2.messages");
-            //writeResultSet(resultSet);
+            resultSet = statement.executeQuery("select * from " + sourceDb + "." + sourceTable);
 
-            connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/HealthInformationSystem?"
+            connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/" + destDb + "?"
                     + "user=root&password=");
 
             while(resultSet.next())
             {
+
+                String currentDateAndTime = getCurrentDate();
                 //grab all data from table
                 String last_accessed = resultSet.getString("Last_Accessed");
                 String patientIdStr = resultSet.getString("patientId");
@@ -139,6 +154,9 @@ public class Main {
                 String patientRole = "";
                 // execute queries
 
+                //TODO: do we need this given current setup?
+                if(!last_accessed.equals(currentDateAndTime)) {
+                }
                 /********* INSURANCE COMPANY ************/
                 PreparedStatement icStmt = connectHISDB.prepareStatement(
                         "INSERT INTO InsuranceCompany " +
@@ -186,7 +204,7 @@ public class Main {
                 PreparedStatement patientStmt = connectHISDB.prepareStatement(
                         "INSERT INTO Patient " +
                                 "(patientID, suffix, familyName, givenName, gender, birthTime, providerID, xmlHealthCreationDate, guardianNo, payerID, patientRole, policyType, purpose) " +
-                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientID=patientID");
+                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientID=patientID, xmlHealthCreationDate=xmlHealthCreationDate");
 
                 patientStmt.setString(1, patientIdStr);
                 patientStmt.setString(2, suffix);
@@ -195,7 +213,7 @@ public class Main {
                 patientStmt.setString(5, gender);
                 patientStmt.setString(6, birthTime);
                 patientStmt.setString(7, providerIdStr);
-                patientStmt.setDate(8, java.sql.Date.valueOf(getCurrentDate()));
+                patientStmt.setString(8, currentDateAndTime);
                 patientStmt.setString(9, guardianNoStr);
                 patientStmt.setString(10, payerIdStr);
                 patientStmt.setString(11, patientRole);
@@ -284,6 +302,14 @@ public class Main {
                 planStatement.setString(4, patientIdStr);
 
                 planStatement.executeUpdate();
+
+
+                /********* UPDATE LAST ACCESSED FOR CURRENT ROW IN RESULTSET *********/
+
+                PreparedStatement updateLastAccessed = sourceConnect.prepareStatement("UPDATE messages SET Last_Accessed='" + currentDateAndTime
+                + "' WHERE patientId='" + patientIdStr+ "'");
+
+                updateLastAccessed.executeUpdate();
 
 
 
