@@ -11,16 +11,71 @@ import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Scanner;
 
 
 public class Main {
 
     public static void main(String[] args)
     {
-	    grabData("healthmessagesexchange2", "messages", "HealthInformationSystem");
+        Scanner inFromConsole = new Scanner(System.in);
+	    //grabData("healthmessagesexchange2", "messages", "HealthInformationSystem");
+        System.out.println("************ Welcome to HealthInformationSystem! **************");
+        System.out.println("Privilege levels are as follows:");
+        System.out.println("\tPatient: 0");
+        System.out.println("\tDoctor: 1");
+        System.out.println("\tAdministrator: 2");
+        System.out.println("Please enter privilege level: ");
+
+        String privilegeLevel = inFromConsole.next();
+        boolean isValidPrivillege = validPrivilege(privilegeLevel);
+        while(!validPrivilege(privilegeLevel))
+        {
+            System.out.println("Not a valid privilege. Input -1 to exit. Otherwise, Please try again: ");
+            privilegeLevel = inFromConsole.next();
+            if(privilegeLevel.equals("-1"))
+            {
+                return;
+            }
+        }
+        // patient case
+        if(privilegeLevel.equals("0"))
+        {
+
+        }
+        // doctor case;
+        else if(privilegeLevel.equals("1"))
+        {
+
+        }
+        //admin case
+        else if(privilegeLevel.equals("2"))
+        {
+
+        }
+        // should never get here, but just to be safe!
+        else
+        {
+            System.out.println("Invalid privilege. Exiting.");
+            return;
+        }
+
+
 
     }
 
+    public static boolean validPrivilege(String input)
+    {
+        if(!(input.equals("0") || input.equals("1") || input.equals("2")))
+        {
+            return false;
+        }
+
+        else
+        {
+            return true;
+        }
+    }
     /** returns a formatted string with the current date and time
      *
      * @return  string containing date in Month/Day/Year Hour:Day AM/PM format
@@ -160,7 +215,7 @@ public class Main {
                 /********* INSURANCE COMPANY ************/
                 PreparedStatement icStmt = connectHISDB.prepareStatement(
                         "INSERT INTO InsuranceCompany " +
-                                "(payerID, name) VALUES(?, ?) ON DUPLICATE KEY UPDATE payerID=payerID");
+                                "(payerID, name) VALUES(?, ?) ON DUPLICATE KEY UPDATE payerID=payerID, name=name");
 
                 icStmt.setString(1, payerIdStr);
                 icStmt.setString(2, name);
@@ -172,7 +227,8 @@ public class Main {
                 PreparedStatement guardianStmt = connectHISDB.prepareStatement(
                         "INSERT INTO Guardian " +
                                 "(guardianNo, givenName, familyName, phone, address, city, state, zip) " +
-                                "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE guardianNo=guardianNo");
+                                "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE guardianNo=guardianNo, givenName=givenName, familyName=familyName,"+
+                                " phone=phone, address=address, city=city, state=state, zip=zip");
                 guardianStmt.setString(1, guardianNoStr);
                 guardianStmt.setString(2, givenName);
                 guardianStmt.setString(3, familyName);
@@ -189,7 +245,7 @@ public class Main {
                 PreparedStatement authorStmt = connectHISDB.prepareStatement(
                         "INSERT INTO Author " +
                                 "(authorID, authorTitle, authorFirstName, authorLastName) "
-                                + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID");
+                                + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID, authorFirstName=authorFirstName, authorLastName=authorLastName, authorTitle=authorTitle");
 
                 authorStmt.setString(1, authorIdStr);
                 authorStmt.setString(2, authorTitle);
@@ -204,7 +260,9 @@ public class Main {
                 PreparedStatement patientStmt = connectHISDB.prepareStatement(
                         "INSERT INTO Patient " +
                                 "(patientID, suffix, familyName, givenName, gender, birthTime, providerID, xmlHealthCreationDate, guardianNo, payerID, patientRole, policyType, purpose) " +
-                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientID=patientID, xmlHealthCreationDate=xmlHealthCreationDate");
+                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientID=patientID, xmlHealthCreationDate=xmlHealthCreationDate,"+
+                                "suffix=suffix, familyName=familyName, givenName=givenName, gender=gender, birthTime=birthTime, providerID=providerID, guardianNo=guardianNo," +
+                                "payerID=payerID, patientRole=patientRole, policyType=policyType, purpose=purpose");
 
                 patientStmt.setString(1, patientIdStr);
                 patientStmt.setString(2, suffix);
@@ -227,7 +285,7 @@ public class Main {
                 PreparedStatement assignedStmt = connectHISDB.prepareStatement(
                         "INSERT INTO Assigned " +
                                 "(authorID, patientID, participatingRole)" +
-                                " VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID , patientID=patientID");
+                                " VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID , patientID=patientID, participatingRole=participatingRole");
 
                 assignedStmt.setString(1, authorIdStr);
                 assignedStmt.setString(2, patientIdStr);
@@ -240,7 +298,7 @@ public class Main {
                 PreparedStatement ltrStmt = connectHISDB.prepareStatement(
                         "INSERT INTO LabTestReport " +
                                 "(LabTestResultID, PatientVisitID, LabTestPerformedDate, LabTestType, ReferenceRangeLow, ReferenceRangeHigh, TestResultValue, patientID) "
-                                + "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE LabTestResultID=LabTestResultID, PatientVisitID=PatientVisitID");
+                                + "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE LabTestResultID=LabTestResultID, PatientVisitID=PatientVisitID, LabTestType=LabTestType, ReferenceRangeLow=ReferenceRangeLow, ReferenceRangeHigh=ReferenceRangeHigh, TestResultValue=TestResultValue, patientID=patientID");
 
                 ltrStmt.setString(1, labTestResultIdStr);
                 ltrStmt.setString(2, patientIdStr);
@@ -260,7 +318,7 @@ public class Main {
                 PreparedStatement pRStatement = connectHISDB.prepareStatement(
                         "INSERT INTO PatientRelative " +
                                 "(relativeID, age, diagnosis, patientID, relationship) " +
-                                "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE relativeID=relativeID , patientID=patientID , diagnosis=diagnosis");
+                                "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE relativeID=relativeID , patientID=patientID , diagnosis=diagnosis, age=age, relationship=relationship");
 
                 pRStatement.setString(1, relativeIdStr);
                 pRStatement.setString(2, ageStr);
@@ -275,7 +333,7 @@ public class Main {
                 PreparedStatement pAStatement = connectHISDB.prepareStatement(
                         "INSERT INTO PatientAllergy " +
                                 "(allergyID, substance, reaction, status, patientID) " +
-                                "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE allergyID=allergyID");
+                                "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE allergyID=allergyID, substance=substance, reaction=reaction, status=status, patientID=patientID");
 
                 pAStatement.setString(1, idStr);
                 pAStatement.setString(2, substance);
@@ -290,7 +348,7 @@ public class Main {
                 PreparedStatement planStatement = connectHISDB.prepareStatement(
                         "INSERT INTO PatientPlan " +
                                 "(planID, date, activity, patientID)  "  +
-                                "VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE planID=planID");
+                                "VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE planID=planID, date=date, activity=activity, patientID=patientID");
 
                 if(planIdStr == null)
                 {
