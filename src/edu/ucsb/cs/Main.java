@@ -18,8 +18,14 @@ public class Main {
 
     public static void main(String[] args)
     {
-        Scanner inFromConsole = new Scanner(System.in);
+
 	    //grabData("healthmessagesexchange2", "messages", "HealthInformationSystem");
+        mainMenu();
+
+    }
+    public static void mainMenu()
+    {
+        Scanner inFromConsole = new Scanner(System.in);
         System.out.println("************ Welcome to HealthInformationSystem! **************");
         System.out.println("Privilege levels are as follows:");
         System.out.println("\tPatient: 0");
@@ -41,7 +47,7 @@ public class Main {
         // patient case
         if(privilegeLevel.equals("0"))
         {
-
+            patientCase();
         }
         // doctor case;
         else if(privilegeLevel.equals("1"))
@@ -61,9 +67,7 @@ public class Main {
         }
 
 
-
     }
-
     public static boolean validPrivilege(String input)
     {
         if(!(input.equals("0") || input.equals("1") || input.equals("2")))
@@ -90,30 +94,143 @@ public class Main {
         String s = timeFormat.format(new java.util.Date());
         return s;
     }
-    public void patientRead()
+    public static void patientCase()
     {
+        try {
+            //set up JDBC connections
+            Class.forName("com.mysql.jdbc.Driver");
+            ResultSet resultSet = null;
+            Connection connectHISDB = null;
+            Statement statement = null;
+
+            connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/HealthInformationSystem?"
+                    + "user=root&password=");
+            statement = connectHISDB.createStatement();
+
+
+
+
+            Scanner patientScanner = new Scanner(System.in);
+            String patientID;
+            System.out.println("******* PATIENT ACCESS *********");
+            System.out.println("For all cases, if you enter -1, the program will exit.");
+            System.out.println("Please enter your ID: ");
+            patientID = patientScanner.next();
+            if (patientID.equals("-1"))
+            {
+                return;
+            }
+            //get tuple from Patient table that corresponds to input patient ID
+            resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
+            // check if result set has anything in it, loop until this occurs or exit with -1
+            while(!resultSet.isBeforeFirst() )
+            {
+                System.out.println("Provided patient ID is not valid. Please try again or enter -1 to exit.");
+                patientID = patientScanner.next();
+                if(patientID.equals("-1"))
+                {
+                    return;
+                }
+                resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
+            }
+            // display options to patient
+            String patientMenuInput = "-2";
+            while(!patientMenuInput.equals("-1"))
+            {
+                System.out.println("Okay patient " + patientID + ", what would you like to do? Select from amongst the following options. Input -1 to exit");
+                displayPatientMenu();
+                patientMenuInput = patientScanner.next();
+
+                // view patient record
+                if(patientMenuInput.equals("1"))
+                {
+                   // System.out.println("in 1 menu");
+                    statement = connectHISDB.createStatement();
+                    //System.out.println("patientID = " + patientID);
+                    System.out.println("********** PATIENT INFO *************");
+                    resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
+                    resultSet.next();
+                    System.out.println("ID: " + resultSet.getString("patientID"));
+                    System.out.println("Name (f, l): " + resultSet.getString("givenName") + " " + resultSet.getString("familyName"));
+                    System.out.println("Birth Date / Time: " + resultSet.getString("birthTime"));
+                    System.out.println("ProviderID: " + resultSet.getString("providerID"));
+                    System.out.println("Guardian ID: " + resultSet.getString("guardianNo"));
+                    System.out.println("Payer ID: " + resultSet.getString("payerID"));
+                    System.out.println("Policy Type: " + resultSet.getString("policyType"));
+                    System.out.println("Purpose: " + resultSet.getString("purpose"));
+                    System.out.println("************ END PATIENT INFO ***********");
+                }
+                // view authors assigned to this patient / recorded roles
+                else if(patientMenuInput.equals("2"))
+                {
+                    statement = connectHISDB.createStatement();
+                    System.out.println("*********** ASSIGNED AUTHORS TO PATIENT ************");
+                    resultSet = statement.executeQuery("SELECT * FROM Assigned WHERE patienID='" + patientID + "'");
+                    while(resultSet.next())
+                    {
+                       // do stuff
+                    }
+                }
+                // view lab test reports
+                else if(patientMenuInput.equals("3"))
+                {
+
+                }
+                // view allergies
+                else if(patientMenuInput.equals("4"))
+                {
+
+                }
+                // view plan
+                else if(patientMenuInput.equals("5"))
+                {
+
+                }
+                // view guardian information
+                else if(patientMenuInput.equals("6"))
+                {
+
+                }
+                // edit patient information
+                else if(patientMenuInput.equals("7"))
+                {
+
+                }
+                //edit guardian information
+                else if(patientMenuInput.equals("8"))
+                {
+
+                }
+            }
+
+        }
+        catch(ClassNotFoundException ex)
+        {
+            System.out.println("Cannot find JDBC class. Exiting.");
+            return;
+        }
+        catch(SQLException ex)
+        {
+            ex.printStackTrace();
+            System.out.println("Error executing query. Exiting.");
+            return;
+        }
+    }
+    public static void displayPatientMenu()
+    {
+        System.out.println("********* PATIENT MENU *********");
+        System.out.println("1: View my Patient record.");
+        System.out.println("2: View Authors assigned to me and the role they recorded.");
+        System.out.println("3: View my previous Lab Test Reports.");
+        System.out.println("4: View my allergies.");
+        System.out.println("5: View my plan.");
+        System.out.println("6: View my guardian information.");
+        System.out.println("7: Edit my information in Patient table.");
+        System.out.println("8: Edit my Guardian information.");
+
 
     }
-    public void patientWrite()
-    {
 
-    }
-    public void doctorRead()
-    {
-
-    }
-    public void doctorWrite()
-    {
-
-    }
-    public void adminRead()
-    {
-
-    }
-    public void adminWrite()
-    {
-
-    }
 
     /**
      * grabs data from sourceTable located in sourceDb, and inserts it into destDb
@@ -127,7 +244,6 @@ public class Main {
 
         Connection sourceConnect = null;
         Statement statement = null;
-        PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         Connection connectHISDB = null;
 
