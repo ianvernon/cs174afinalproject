@@ -165,21 +165,56 @@ public class Main {
                 {
                     statement = connectHISDB.createStatement();
                     System.out.println("*********** ASSIGNED AUTHORS TO PATIENT ************");
-                    resultSet = statement.executeQuery("SELECT * FROM Assigned WHERE patienID='" + patientID + "'");
-                    while(resultSet.next())
-                    {
-                       // do stuff
+                    resultSet = statement.executeQuery("SELECT * FROM Assigned WHERE patientID='" + patientID + "'");
+                    int i = 1;
+                    //print information about all authors assigned to patient
+                    while(resultSet.next()) {
+                        System.out.println("******** AUTHOR " + i + " **********");
+                        String authorID = resultSet.getString("authorID");
+                        Statement authorInfoStmt = connectHISDB.createStatement();
+                        ResultSet authorInfoSet = authorInfoStmt.executeQuery("SELECT * FROM Author WHERE authorID='" + authorID + "'");
+                        authorInfoSet.next();
+                        String authorTitle = authorInfoSet.getString("authorTitle");
+                        //account for if authorTitle field is null - which it is for whatever reason in the data they give us
+                        if (authorTitle != null) {
+                            System.out.println("Author " + authorInfoSet.getString("authorTitle") + " " + authorInfoSet.getString("authorFirstName") + " " +
+                                    authorInfoSet.getString("authorLastName") + " recorded information regarding " + resultSet.getString("participatingRole"));
+
+                        }
+                        else
+                        {
+                            System.out.println("Author " + authorInfoSet.getString("authorFirstName") + " " +
+                                    authorInfoSet.getString("authorLastName") + " recorded information regarding " + resultSet.getString("participatingRole"));
+                        }
                     }
                 }
                 // view lab test reports
                 else if(patientMenuInput.equals("3"))
                 {
-
+                    System.out.println("************** LAB TEST INFO ***************");
+                    resultSet = statement.executeQuery("SELECT * FROM LabTestReport WHERE patientID='" + patientID + "'");
+                    while(resultSet.next())
+                    {
+                        System.out.println("TestID: " + resultSet.getString("LabTestResultID"));
+                        System.out.println("VisitID: " + resultSet.getString("PatientVisitID"));
+                        System.out.println("Date of test: " + resultSet.getString("LabTestPerformedDate"));
+                        System.out.println("Type of test: " + resultSet.getString("LabTestType"));
+                        System.out.println("Reference Range: " + resultSet.getString("ReferenceRangeLow") + " - " +
+                                            resultSet.getString("ReferenceRangeHigh"));
+                        System.out.println("Test results: " + resultSet.getString("TestResultValue") + "\n");
+                    }
                 }
                 // view allergies
                 else if(patientMenuInput.equals("4"))
                 {
-
+                    System.out.println("*************** ALLERGY INFO ************");
+                    resultSet = statement.executeQuery("SELECT * FROM PatientAllergy WHERE patientID='" + patientID + "'");
+                    while(resultSet.next())
+                    {
+                        System.out.println("Substance: " + resultSet.getString("substance"));
+                        System.out.println("Reaction: " + resultSet.getString("reaction"));
+                        System.out.println("Status: " + resultSet.getString("status"));
+                    }
                 }
                 // view plan
                 else if(patientMenuInput.equals("5"))
