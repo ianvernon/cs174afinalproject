@@ -248,7 +248,56 @@ public class Main {
                     // ask what they want to edit - provided number to enter to escape, loop until they do so
                     // make sure length of string is not over 100 characters
                     // can edit suffix, familyName, givenName, gender, birthTime (anything else we should edit?)
+                    Scanner editPatientScanner = new Scanner(System.in);
+                    System.out.println("Which of the following would you like to edit? Enter -1 to exit.");
+                    System.out.println("1: Suffix");
+                    System.out.println("2: Gender");
+                    System.out.println("3: Family (Last) Name: ");
+                    System.out.println("4: Given (First) Name: ");
+                    System.out.println("5: Birth Date / Time: ");
+                    String editPatientStr = editPatientScanner.next();
+                    if(editPatientStr.equals("1"))
+                    {
+                        System.out.println("Please enter suffix: ");
+                        editPatientStr = editPatientScanner.next();
+                    }
+                    else if(editPatientStr.equals("2"))
+                    {
+                        System.out.println("Please enter gender (Male or Female): ");
+                        editPatientStr = editPatientScanner.next();
+                    }
+                    else if(editPatientStr.equals("3"))
+                    {
+                        System.out.println("Please enter family (last) name: ");
+                        editPatientStr = editPatientScanner.next();
+                    }
+                    else if(editPatientStr.equals("4"))
+                    {
+                        System.out.println("Please enter given (fist) name: ");
+                        editPatientStr = editPatientScanner.next();
 
+                    }
+                    else if(editPatientStr.equals("5"))
+                    {
+                        System.out.println("Enter date of birth: (mm/dd/yyyy)");
+
+                        String date = editPatientScanner.next();
+                        while(!date.matches("(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[012])/((19|20)\\\\d\\\\d)"))
+                        {
+                            System.out.println("Incorrect format. Try again.\nEnter date of birth: (mm/dd/yyyy)");
+                            date = editPatientScanner.next();
+                        }
+                        String time = editPatientScanner.next();
+                        while(!time.matches("(1[012]|[1-9]):[0-5][0-9]:[0-5][0-9](\\s)?(?i)(am|pm)"))
+                        {
+                            System.out.println("Incorrect format. Try again.\nEnter time of birth (hh:mm:ss AM/PM");
+                            time = editPatientScanner.next();
+                        }
+                    }
+                    else
+                    {
+                        System.out.println("Invalid input. Returning to menu.");
+                    }
                 }
                 //edit guardian information
                 else if(patientMenuInput.equals("8"))
