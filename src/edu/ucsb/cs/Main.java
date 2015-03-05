@@ -219,21 +219,44 @@ public class Main {
                 // view plan
                 else if(patientMenuInput.equals("5"))
                 {
-
+                    System.out.println("*************** PLAN INFO ************");
+                    resultSet = statement.executeQuery("SELECT * FROM PatientPlan WHERE patientID='" + patientID + "'");
+                    while(resultSet.next())
+                    {
+                        System.out.println("Activity: " + resultSet.getString("activity") + " performed on " + resultSet.getString("date"));
+                    }
                 }
                 // view guardian information
                 else if(patientMenuInput.equals("6"))
                 {
-
+                    System.out.println("********** GUARDIAN INFO **********");
+                    //resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
+                    resultSet.next();
+                    String guardianNo = resultSet.getString("guardianNo");
+                    resultSet = statement.executeQuery("SELECT * FROM Guardian WHERE guardianNo='" + guardianNo + "'");
+                    while(resultSet.next())
+                    {
+                        System.out.println("Name (f, l): " + resultSet.getString("givenName") + " " + resultSet.getString("familyName"));
+                        System.out.println("Address: " + resultSet.getString("address") + "\n" + resultSet.getString("city") +
+                                            resultSet.getString("state") + " " + resultSet.getString("zip"));
+                        System.out.println("Phone: " + resultSet.getString("phone"));
+                    }
                 }
                 // edit patient information
                 else if(patientMenuInput.equals("7"))
                 {
+                    // ask what they want to edit - provided number to enter to escape, loop until they do so
+                    // make sure length of string is not over 100 characters
+                    // can edit suffix, familyName, givenName, gender, birthTime (anything else we should edit?)
 
                 }
                 //edit guardian information
                 else if(patientMenuInput.equals("8"))
                 {
+                    // ask what they want to edit - provided number to enter to escape, loop until they do so
+                    // make sure length of string is not over 100 characters
+                    //can edit guardian's givenName, familyName, phone, address, city, state, zip
+                    // should we check for information about strings they enter in?
 
                 }
             }
