@@ -260,21 +260,83 @@ public class Main {
                     {
                         System.out.println("Please enter suffix: ");
                         editPatientStr = editPatientScanner.next();
+                        while(editPatientStr.length() > 100)
+                        {
+                            System.out.println("Too big of a suffix. Try again.");
+                            editPatientStr = editPatientScanner.next();
+                        }
+                        String updateSuffixQuery = "UPDATE Patient SET suffix='" + editPatientStr + "' WHERE patientID='"
+                                                    + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(updateSuffixQuery);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
                     }
                     else if(editPatientStr.equals("2"))
                     {
                         System.out.println("Please enter gender (Male or Female): ");
                         editPatientStr = editPatientScanner.next();
+                        while(editPatientStr.length() > 100)
+                        {
+                            System.out.println("String size too big. Try again.");
+                            editPatientStr = editPatientScanner.next();
+                        }
+                        String updateGenderQuery = "UPDATE Patient SET gender='" + editPatientStr + "' WHERE patientID='"
+                                                    + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(updateGenderQuery);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
                     }
                     else if(editPatientStr.equals("3"))
                     {
                         System.out.println("Please enter family (last) name: ");
                         editPatientStr = editPatientScanner.next();
+                        while(editPatientStr.length() > 100)
+                        {
+                             System.out.println("Too long of a string. Try again.");
+                            editPatientStr = editPatientScanner.next();
+                        }
+                        String updateLastNameQuery = "UPDATE Patient SET familyName='" + editPatientStr + "' WHERE patientID='" + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(updateLastNameQuery);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
                     }
                     else if(editPatientStr.equals("4"))
                     {
                         System.out.println("Please enter given (fist) name: ");
                         editPatientStr = editPatientScanner.next();
+                        while(editPatientStr.length() > 100)
+                        {
+                            System.out.println("Too long of a string. Try again.");
+                            editPatientStr = editPatientScanner.next();
+                        }
+                        String firstNameUpdate = "UPDATE Patient SET givenName='" + editPatientStr + "' WHERE patientID='" + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(firstNameUpdate);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successsful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
 
                     }
                     else if(editPatientStr.equals("5"))
@@ -293,6 +355,18 @@ public class Main {
                             System.out.println("Incorrect format. Try again.\nEnter time of birth (hh:mm:ss AM/PM");
                             time = editPatientScanner.next();
                         }
+                        String combinedDateTime = date +  " " + time;
+                        String updateStr = "UPDATE Patient SET birthTime='" + combinedDateTime + "' WHERE patientID='" + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(updateStr);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
+
                     }
                     else
                     {
@@ -347,7 +421,7 @@ public class Main {
      */
     public static void grabData(String sourceDb, String sourceTable, String destDb)
     {
-        System.out.println("Hello world!!!!!");
+        //System.out.println("Hello world!!!!!");
 
         Connection sourceConnect = null;
         Statement statement = null;
