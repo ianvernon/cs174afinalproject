@@ -52,7 +52,7 @@ public class Main {
         // doctor case;
         else if(privilegeLevel.equals("1"))
         {
-
+            doctorCase();
         }
         //admin case
         else if(privilegeLevel.equals("2"))
@@ -106,8 +106,6 @@ public class Main {
             connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/HealthInformationSystem?"
                     + "user=root&password=");
             statement = connectHISDB.createStatement();
-
-
 
 
             Scanner patientScanner = new Scanner(System.in);
@@ -397,6 +395,7 @@ public class Main {
             return;
         }
     }
+
     public static void displayPatientMenu()
     {
         System.out.println("********* PATIENT MENU *********");
@@ -412,6 +411,328 @@ public class Main {
 
     }
 
+    public static void doctorCase(){
+        try {
+            //set up JDBC connections
+            Class.forName("com.mysql.jdbc.Driver");
+            ResultSet resultSet = null;
+            ResultSet resultSet2 = null;
+            Connection connectHISDB = null;
+            Statement statement = null;
+
+            connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/HealthInformationSystem?"
+                    + "user=root&password=");
+            statement = connectHISDB.createStatement();
+
+
+            Scanner doctorScanner = new Scanner(System.in);
+            String authorID;
+            System.out.println("******* DOCTOR/AUTHOR ACCESS *********");
+            System.out.println("For all cases, if you enter -1, the program will exit.");
+            System.out.println("Please enter your ID: ");
+            authorID = doctorScanner.next();
+            if (authorID.equals("-1"))
+            {
+                return;
+            }
+            //get tuple from Patient table that corresponds to input patient ID
+            //Austin: need to validate Author info but access Patients info!!?
+            //Austin: Right now it is accessing Authors info as if it was Patient case
+            resultSet = statement.executeQuery("SELECT * FROM Author WHERE authorID='" + authorID + "'");
+            // check if result set has anything in it, loop until this occurs or exit with -1
+            while(!resultSet.isBeforeFirst() )
+            {
+                System.out.println("Provided author ID is not valid. Please try again or enter -1 to exit.");
+                authorID = doctorScanner.next();
+                if(authorID.equals("-1"))
+                {
+                    return;
+                }
+                resultSet = statement.executeQuery("SELECT * FROM Author WHERE authorID='" + authorID + "'");
+            }
+            // display options to Doctor/Author
+            String doctorMenuInput = "-2";
+            while(!doctorMenuInput.equals("-1"))
+            {
+                System.out.println("Okay Author " + authorID + ", what would you like to do? Select from amongst the following options. Input -1 to exit");
+                displayDoctorMenu();
+                doctorMenuInput = doctorScanner.next();
+                System.out.println("Enter Patients ID");
+                String patientID = doctorScanner.next();
+                resultSet2 = statement.executeQuery("SELECT * FROM Patient WHERE PatientID='" + patientID + "'");
+                //Author will need to enter PatientID after choosing option in order to pull specific Tuple!!
+
+                // view patient record
+                if(doctorMenuInput.equals("1"))
+                {
+                    // System.out.println("in 1 menu");
+                    statement = connectHISDB.createStatement();
+                    System.out.println("patientID = " + patientID);
+                    System.out.println("********** PATIENT INFO *************");
+                    resultSet2 = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
+                    resultSet2.next();
+                    System.out.println("ID: " + resultSet2.getString("patientID"));
+                    System.out.println("Name (f, l): " + resultSet2.getString("givenName") + " " + resultSet2.getString("familyName"));
+                    System.out.println("Birth Date / Time: " + resultSet2.getString("birthTime"));
+                    System.out.println("ProviderID: " + resultSet2.getString("providerID"));
+                    System.out.println("Guardian ID: " + resultSet2.getString("guardianNo"));
+                    System.out.println("Payer ID: " + resultSet2.getString("payerID"));
+                    System.out.println("Policy Type: " + resultSet2.getString("policyType"));
+                    System.out.println("Purpose: " + resultSet2.getString("purpose"));
+                    System.out.println("************ END PATIENT INFO ***********");
+                }
+                // view authors assigned to this patient / recorded roles
+                else if(doctorMenuInput.equals("2"))
+                {
+                    statement = connectHISDB.createStatement();
+                    System.out.println("*********** ASSIGNED AUTHORS TO PATIENT ************");
+                    resultSet = statement.executeQuery("SELECT * FROM Assigned WHERE patientID='" + patientID + "'");
+                    int i = 1;
+                    //print information about all authors assigned to patient
+                    while(resultSet.next()) {
+                        System.out.println("******** AUTHOR " + i + " **********");
+                        //Austin: Need to create second authorID variable because patients author could be different than the one currently accessing
+                        String authorID2 = resultSet.getString("authorID");
+                        Statement authorInfoStmt = connectHISDB.createStatement();
+                        ResultSet authorInfoSet = authorInfoStmt.executeQuery("SELECT * FROM Author WHERE authorID='" + authorID2 + "'");
+                        authorInfoSet.next();
+                        String authorTitle = authorInfoSet.getString("authorTitle");
+                        //account for if authorTitle field is null - which it is for whatever reason in the data they give us
+                        if (authorTitle != null) {
+                            System.out.println("Author " + authorInfoSet.getString("authorTitle") + " " + authorInfoSet.getString("authorFirstName") + " " +
+                                    authorInfoSet.getString("authorLastName") + " recorded information regarding " + resultSet.getString("participatingRole"));
+
+                        }
+                        else
+                        {
+                            System.out.println("Author " + authorInfoSet.getString("authorFirstName") + " " +
+                                    authorInfoSet.getString("authorLastName") + " recorded information regarding " + resultSet.getString("participatingRole"));
+                        }
+                    }
+                }
+                // view lab test reports
+                else if(doctorMenuInput.equals("3"))
+                {
+                    System.out.println("************** LAB TEST INFO ***************");
+                    resultSet = statement.executeQuery("SELECT * FROM LabTestReport WHERE patientID='" + patientID + "'");
+                    while(resultSet.next())
+                    {
+                        System.out.println("TestID: " + resultSet.getString("LabTestResultID"));
+                        System.out.println("VisitID: " + resultSet.getString("PatientVisitID"));
+                        System.out.println("Date of test: " + resultSet.getString("LabTestPerformedDate"));
+                        System.out.println("Type of test: " + resultSet.getString("LabTestType"));
+                        System.out.println("Reference Range: " + resultSet.getString("ReferenceRangeLow") + " - " +
+                                resultSet.getString("ReferenceRangeHigh"));
+                        System.out.println("Test results: " + resultSet.getString("TestResultValue") + "\n");
+                    }
+                }
+                // view allergies
+                else if(doctorMenuInput.equals("4"))
+                {
+                    System.out.println("*************** ALLERGY INFO ************");
+                    resultSet = statement.executeQuery("SELECT * FROM PatientAllergy WHERE patientID='" + patientID + "'");
+                    while(resultSet.next())
+                    {
+                        System.out.println("Substance: " + resultSet.getString("substance"));
+                        System.out.println("Reaction: " + resultSet.getString("reaction"));
+                        System.out.println("Status: " + resultSet.getString("status"));
+                    }
+                }
+                // view plan
+                else if(doctorMenuInput.equals("5"))
+                {
+                    System.out.println("*************** PLAN INFO ************");
+                    resultSet = statement.executeQuery("SELECT * FROM PatientPlan WHERE patientID='" + patientID + "'");
+                    while(resultSet.next())
+                    {
+                        System.out.println("Activity: " + resultSet.getString("activity") + " performed on " + resultSet.getString("date"));
+                    }
+                }
+                // view guardian information
+                else if(doctorMenuInput.equals("6"))
+                {
+                    System.out.println("********** GUARDIAN INFO **********");
+                    //resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
+                    resultSet.next();
+                    String guardianNo = resultSet.getString("guardianNo");
+                    resultSet = statement.executeQuery("SELECT * FROM Guardian WHERE guardianNo='" + guardianNo + "'");
+                    while(resultSet.next())
+                    {
+                        System.out.println("Name (f, l): " + resultSet.getString("givenName") + " " + resultSet.getString("familyName"));
+                        System.out.println("Address: " + resultSet.getString("address") + "\n" + resultSet.getString("city") +
+                                resultSet.getString("state") + " " + resultSet.getString("zip"));
+                        System.out.println("Phone: " + resultSet.getString("phone"));
+                    }
+                }
+                // edit patient plan
+                else if(doctorMenuInput.equals("7"))
+                {
+                    // ask what they want to edit - provided number to enter to escape, loop until they do so
+                    // make sure length of string is not over 100 characters
+                    //Austin: Only need to edit a patients plan in this case! (But how?)
+                    Scanner editPatientScanner = new Scanner(System.in);
+                    //Can delete everything commented below
+                   /* System.out.println("Which of the following would you like to edit? Enter -1 to exit.");
+                    System.out.println("1: Suffix");
+                    System.out.println("2: Gender");
+                    System.out.println("3: Family (Last) Name: ");
+                    System.out.println("4: Given (First) Name: ");
+                    System.out.println("5: Birth Date / Time: ");
+                    String editPatientStr = editPatientScanner.next();
+                    if(editPatientStr.equals("1"))
+                    {
+                        System.out.println("Please enter suffix: ");
+                        editPatientStr = editPatientScanner.next();
+                        while(editPatientStr.length() > 100)
+                        {
+                            System.out.println("Too big of a suffix. Try again.");
+                            editPatientStr = editPatientScanner.next();
+                        }
+                        String updateSuffixQuery = "UPDATE Patient SET suffix='" + editPatientStr + "' WHERE patientID='"
+                                + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(updateSuffixQuery);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
+                    }
+                    else if(editPatientStr.equals("2"))
+                    {
+                        System.out.println("Please enter gender (Male or Female): ");
+                        editPatientStr = editPatientScanner.next();
+                        while(editPatientStr.length() > 100)
+                        {
+                            System.out.println("String size too big. Try again.");
+                            editPatientStr = editPatientScanner.next();
+                        }
+                        String updateGenderQuery = "UPDATE Patient SET gender='" + editPatientStr + "' WHERE patientID='"
+                                + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(updateGenderQuery);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
+                    }
+                    else if(editPatientStr.equals("3"))
+                    {
+                        System.out.println("Please enter family (last) name: ");
+                        editPatientStr = editPatientScanner.next();
+                        while(editPatientStr.length() > 100)
+                        {
+                            System.out.println("Too long of a string. Try again.");
+                            editPatientStr = editPatientScanner.next();
+                        }
+                        String updateLastNameQuery = "UPDATE Patient SET familyName='" + editPatientStr + "' WHERE patientID='" + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(updateLastNameQuery);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
+                    }
+                    else if(editPatientStr.equals("4"))
+                    {
+                        System.out.println("Please enter given (first) name: ");
+                        editPatientStr = editPatientScanner.next();
+                        while(editPatientStr.length() > 100)
+                        {
+                            System.out.println("Too long of a string. Try again.");
+                            editPatientStr = editPatientScanner.next();
+                        }
+                        String firstNameUpdate = "UPDATE Patient SET givenName='" + editPatientStr + "' WHERE patientID='" + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(firstNameUpdate);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successsful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
+
+                    }
+                    else if(editPatientStr.equals("5"))
+                    {
+                        System.out.println("Enter date of birth: (mm/dd/yyyy)");
+
+                        String date = editPatientScanner.next();
+                        while(!date.matches("(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[012])/((19|20)\\\\d\\\\d)"))
+                        {
+                            System.out.println("Incorrect format. Try again.\nEnter date of birth: (mm/dd/yyyy)");
+                            date = editPatientScanner.next();
+                        }
+                        String time = editPatientScanner.next();
+                        while(!time.matches("(1[012]|[1-9]):[0-5][0-9]:[0-5][0-9](\\s)?(?i)(am|pm)"))
+                        {
+                            System.out.println("Incorrect format. Try again.\nEnter time of birth (hh:mm:ss AM/PM");
+                            time = editPatientScanner.next();
+                        }
+                        String combinedDateTime = date +  " " + time;
+                        String updateStr = "UPDATE Patient SET birthTime='" + combinedDateTime + "' WHERE patientID='" + patientID + "'";
+                        int numRowsUpdated = statement.executeUpdate(updateStr);
+                        if(numRowsUpdated > 0)
+                        {
+                            System.out.println("Update successful.");
+                        }
+                        else
+                        {
+                            System.out.println("Update failed.");
+                        }
+
+                    }
+                    else
+                    {
+                        System.out.println("Invalid input. Returning to menu.");
+                    } */
+                }
+                //edit a Patients allergies information
+                else if(doctorMenuInput.equals("8"))
+                {
+                    // ask what they want to edit - provided number to enter to escape, loop until they do so
+                    // make sure length of string is not over 100 characters
+                    //Austin: only need to edit Patients allergies data in this case
+
+                }
+            }
+
+        }
+        catch(ClassNotFoundException ex)
+        {
+            System.out.println("Cannot find JDBC class. Exiting.");
+            return;
+        }
+        catch(SQLException ex)
+        {
+            ex.printStackTrace();
+            System.out.println("Error executing query. Exiting.");
+            return;
+        }
+    }
+
+    public static void displayDoctorMenu(){
+
+        System.out.println("********* DOCTOR/AUTHOR MENU *********");
+        System.out.println("1: View a Patients record.");
+        System.out.println("2: View Authors assigned to a patient and the role they recorded.");
+        System.out.println("3: View a Patients previous Lab Test Reports.");
+        System.out.println("4: View a Patients allergies.");
+        System.out.println("5: View a Patients plan.");
+        System.out.println("6: View a Patients guardian information.");
+        System.out.println("7: Edit a Patients plan.");
+        System.out.println("8: Edit a Patients allergies data.");
+
+    }
 
     /**
      * grabs data from sourceTable located in sourceDb, and inserts it into destDb
