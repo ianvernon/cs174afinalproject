@@ -5,16 +5,37 @@ package edu.ucsb.cs;
  */
 public class PatientAllergy
 {
+        private String allergyID;
         private String substance;
         private String reaction;
         private String status;
-        private int patientID;
+        private String patientID;
 
-        public PatientAllergy(String substance, String reaction, String status, int patientID)
+        public PatientAllergy(String allergyID, String substance, String reaction, String status, String patientID)
         {
             this.substance = substance;
             this.reaction = reaction;
             this.status = status;
             this.patientID = patientID;
         }
+
+    public String getSubstance() {
+        return substance;
+    }
+
+    public String getReaction() {
+        return reaction;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getPatientID() {
+        return patientID;
+    }
+
+    public String getAllergyID() {
+        return allergyID;
+    }
 }

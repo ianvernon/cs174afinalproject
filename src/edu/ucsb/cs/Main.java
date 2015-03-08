@@ -1,13 +1,14 @@
 package edu.ucsb.cs;
 
 
+import com.javafx.tools.doclets.formats.html.SourceToHTMLConverter;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -51,6 +52,7 @@ public class Main {
             }
             //admin case
             else if (privilegeLevel.equals("2")) {
+                adminCase();
 
             }
             else if(privilegeLevel.equals("-1"))
@@ -546,12 +548,10 @@ public class Main {
         try {
             //set up JDBC connections
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connectHISDB = null;
-            Statement statement = null;
+            Connection connectHISDB;
 
             connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/HealthInformationSystem?"
                     + "user=root&password=");
-            statement = connectHISDB.createStatement();
 
 
             Scanner patientScanner = new Scanner(System.in);
@@ -618,6 +618,14 @@ public class Main {
                 {
                     editGuardianInfo(connectHISDB, p);
                 }
+                else if(patientMenuInput.equals("-1"))
+                {
+                    //do nothing
+                }
+                else
+                {
+                    System.out.println("Invalid option. Try again.");
+                }
             }
             System.out.println("*************EXITING**************");
 
@@ -674,14 +682,12 @@ public class Main {
         try {
             //set up JDBC connections
             Class.forName("com.mysql.jdbc.Driver");
-            ResultSet resultSet = null;
-            ResultSet resultSet2 = null;
-            Connection connectHISDB = null;
-            Statement statement = null;
+            Connection connectHISDB;
+
 
             connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/HealthInformationSystem?"
                     + "user=root&password=");
-            statement = connectHISDB.createStatement();
+
 
 
             Scanner doctorScanner = new Scanner(System.in);
@@ -834,7 +840,76 @@ public class Main {
     }
     public static void editAllergiesInformation(Connection connectHISDB, Patient p, Author a) throws SQLException
     {
+            System.out.println("Enter the allergy ID from the following for this patient that you'd like to edit: ");
+            viewPatientAllergies(connectHISDB, p);
+            Scanner allergyScanner = new Scanner(System.in);
+            String allergyIdStr = allergyScanner.next();
+            String query = "SELECT * FROM PatientAllergy WHERE allergyID='" + allergyIdStr + "' AND patientID='" + p.getPatientID() + "'";
+            Statement statement = connectHISDB.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            // make sure planID entered is valid
+            while(!resultSet.isBeforeFirst())
+            {
+                System.out.println("Inputted allergyID is not valid.");
+                System.out.println("Enter valid allergyID");
+                allergyIdStr = allergyScanner.next();
+                query = "SELECT * FROM PatientAllergy WHERE allergyID='" + allergyIdStr + "'";
+                resultSet = statement.executeQuery(query);
+            }
 
+            PatientAllergy patientAllergy = new PatientAllergy(resultSet.getString("allergyID"), resultSet.getString("substance"), resultSet.getString("reaction"),
+                                                               resultSet.getString("status"), resultSet.getString("patientID"));
+            System.out.println("What attributes of this allergy would you like to edit? Select from the following. Exit with -1: ");
+            System.out.println("1: Substance");
+            System.out.println("2: Reaction");
+            System.out.println("3: Status");
+
+            String attributeToEdit = allergyScanner.next();
+            while(!attributeToEdit.equals("-1"))
+            {
+                //editing substance
+                if(attributeToEdit.equals("1"))
+                {
+                    Scanner subScanner = new Scanner(System.in);
+                    System.out.println("Enter substance:");
+                    String substance = subScanner.nextLine();
+                    String update = "UPDATE PatientAllergy SET substance='" + substance + "' WHERE allergyID='" + patientAllergy.getAllergyID() + "'";
+                    statement.executeUpdate(update);
+                    System.out.println("Updated allergy information.");
+                    updateAssignedData(connectHISDB, p, a, "Allergy Information");
+                }
+                //editing reaction
+                else if(attributeToEdit.equals("2"))
+                {
+                    Scanner rxnScanner = new Scanner(System.in);
+                    System.out.println("Enter reaction: ");
+                    String rxn = rxnScanner.nextLine();
+                    String update = "UPDATE PatientAllergy SET reaction='" + rxn + "' WHERE allergyID='" + patientAllergy.getAllergyID() + "'";
+                    statement.executeUpdate(update);
+                    System.out.println("Updated allergy information.");
+                    updateAssignedData(connectHISDB, p, a, "Allergy Information");
+                }
+                //editing status
+                else if(attributeToEdit.equals("3"))
+                {
+                    Scanner statusScanner = new Scanner(System.in);
+                    System.out.println("Enter status: ");
+                    String status =  statusScanner.nextLine();
+                    String update = "UPDATE PatientAllergy SET status='" + status + "' WHERE allergyID='" + patientAllergy.getAllergyID() + "'";
+                    statement.executeUpdate(update);
+                    System.out.println("Updated allergy information.");
+                    updateAssignedData(connectHISDB, p, a, "Allergy Information");
+                }
+                else
+                {
+                    System.out.println("Invalid input.");
+                }
+                System.out.println("What attributes of this allergy would you like to edit? Select from the following. Exit with -1: ");
+                System.out.println("1: Substance");
+                System.out.println("2: Reaction");
+                System.out.println("3: Status");
+                attributeToEdit = allergyScanner.next();
+            }
     }
 
     public static void updateAssignedData(Connection connectHISDB, Patient p, Author a, String role) throws SQLException
@@ -862,7 +937,146 @@ public class Main {
         System.out.println("8: Edit a Patient's allergies data.");
 
     }
+    public static void displayAdminMenu()
+    {
+        System.out.println("******** ADMIN MENU ************");
+        System.out.println("1: View # of patients for each type of allergy.");
+        System.out.println("2: List patients who have more than one allergy.");
+        System.out.println("3: List patients who have a plan for surgery today.");
+        System.out.println("4: Identify authors with more than one patient.");
+        System.out.println("Or, to exit, enter -1.");
+    }
+    public static void numPatientsPerAllergy(Connection connectHISDB)
+    {
+        Statement statement;
+        //correct query - ignore null?
+        String query = "SELECT PA.substance, COUNT(*)  FROM PatientAllergy PA GROUP BY PA.substance";
+    }
+    public static  void numPatientsGT1Allergy(Connection connectHISDB)
+    {
+        Statement statement;
+        // works
+        String query = "SELECT COUNT(*) FROM (SELECT COUNT(*) FROM PatientAllergy PA GROUP BY PA.patientID HAVING COUNT(*) > 1)mySubQuery";
+    }
+    // change Plan to contain actual dates for this to work (fml)
+    public static void listSurgeryPatientsToday(Connection connectHISDB) throws SQLException
+    {
+        String query = "SELECT * FROM PatientPlan";
+        Statement s = connectHISDB.createStatement();
+        ResultSet resultSet = s.executeQuery(query);
+        while(resultSet.next())
+        {
+            Calendar calendar = Calendar.getInstance();
+            int currMonth = calendar.get(Calendar.MONTH)+1;
+            int currYear = calendar.get(Calendar.YEAR);
+            int currDay = calendar.get(Calendar.DATE);
+            System.out.println("currMonth = " + currMonth);
+            System.out.println("currYear =  " + currYear);
+            System.out.println("currDate = " + currDay);
+            String date = resultSet.getString("date");
+            if(date != null)
+            {
+                String []splitDate = date.split("(/)|(\\s)");
+                for(int i = 0; i < 2; i++)
+                {
+                    if(i==0)
+                    {
+                        System.out.println("splitDate[0] = " + splitDate[0]);
+                    }
+                    else if(i==1)
+                    {
+                        System.out.println("splitDate[1] = " + splitDate[1]);
+                    }
+                    else if(i==2)
+                    {
+                        System.out.println("splitDate[2] = " + splitDate[2]);
+                    }
+                }
+                String currMonthStr = currMonth + "";
+                String currDateStr = currDay + "";
+                String currYearStr = currYear + "";
+                if(splitDate[2].equals(currYearStr))
+                {
+                  if(splitDate[0].equals(currMonthStr))
+                  {
+                      if(splitDate[1].equals(currDateStr))
+                      {
+                          System.out.println("today's date achieved");
+                      }
+                  }
+                }
+            }
 
+        }
+    }
+    public static void listAuthorsWithG1Patient(Connection connectHISDB)
+    {
+        //works
+        String query = "SELECT A.authorID FROM Assigned A GROUP BY A.authorID HAVING COUNT(*) > 1";
+    }
+    public static void adminCase()
+    {
+            try
+            {
+                //set up JDBC connections
+                Class.forName("com.mysql.jdbc.Driver");
+                Connection connectHISDB;
+
+
+                connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/HealthInformationSystem?"
+                        + "user=root&password=");
+
+                Scanner adminScanner = new Scanner(System.in);
+                displayAdminMenu();
+
+                String adminInput = adminScanner.next();
+                while(!adminInput.equals("-1"))
+                {
+                    // # of patients for each type of allergy
+                    if(adminInput.equals("1"))
+                    {
+                        numPatientsPerAllergy(connectHISDB);
+                    }
+                    // list # of patients who have more than one allergy
+                    else if(adminInput.equals("2"))
+                    {
+                        numPatientsGT1Allergy(connectHISDB);
+                    }
+                    // list patients who have a plan for surgery today
+                    else if(adminInput.equals("3"))
+                    {
+                        listSurgeryPatientsToday(connectHISDB);
+                    }
+                    // identify authors with more than one patient
+                    else if(adminInput.equals("4"))
+                    {
+                        listAuthorsWithG1Patient(connectHISDB);
+                    }
+                    else
+                    {
+                        System.out.println("Invalid option. Try again.");
+                    }
+                    displayAdminMenu();
+                    adminInput = adminScanner.next();
+                }
+
+
+
+
+            }
+            catch(ClassNotFoundException ex)
+            {
+                System.out.println("Cannot find JDBC class. Exiting.");
+                return;
+            }
+            catch(SQLException ex)
+            {
+                ex.printStackTrace();
+                System.out.println("Error executing query. Exiting.");
+                return;
+            }
+
+    }
     /**
      * grabs data from sourceTable located in sourceDb, and inserts it into destDb
      * @param sourceDb - name of source database which we will be grabbing data from
