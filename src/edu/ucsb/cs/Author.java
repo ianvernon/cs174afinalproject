@@ -5,16 +5,32 @@ package edu.ucsb.cs;
  */
 public class Author
 {
-    private int authorID;
+    private String authorID;
     private String authorTitle;
     private String authorFirstName;
     private String authorLastName;
 
-    public Author(int authorID, String authorTitle, String authorFirstName, String authorLastName)
+    public Author(String authorID, String authorTitle, String authorFirstName, String authorLastName)
     {
         this.authorID = authorID;
         this.authorTitle = authorTitle;
         this.authorFirstName = authorFirstName;
         this.authorLastName = authorLastName;
+    }
+
+    public String getAuthorID() {
+        return authorID;
+    }
+
+    public String getAuthorTitle() {
+        return authorTitle;
+    }
+
+    public String getAuthorFirstName() {
+        return authorFirstName;
+    }
+
+    public String getAuthorLastName() {
+        return authorLastName;
     }
 }
