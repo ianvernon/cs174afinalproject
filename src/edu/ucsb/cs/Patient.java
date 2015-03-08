@@ -87,4 +87,53 @@ public class Patient
     public String getPurpose() {
         return purpose;
     }
+
+
+    public void setPatientRole(String patientRole) {
+        this.patientRole = patientRole;
+    }
+
+    public void setGivenName(String givenName) {
+        this.givenName = givenName;
+    }
+
+    public void setFamilyName(String familyName) {
+        this.familyName = familyName;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public void setBirthtime(String birthtime) {
+        this.birthtime = birthtime;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+    public void setXmlCreationDate(String xmlCreationDate) {
+        this.xmlCreationDate = xmlCreationDate;
+    }
+
+    public void setGuardianNo(String guardianNo) {
+        this.guardianNo = guardianNo;
+    }
+
+    public void setPayerID(String payerID) {
+        this.payerID = payerID;
+    }
+
+    public void setPolicyType(String policyType) {
+        this.policyType = policyType;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
+    }
 }
