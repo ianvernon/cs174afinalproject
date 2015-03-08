@@ -10,29 +10,81 @@ public class Patient
     private String familyName; //check
     private String suffix; //check
     private String gender; // check
-    private Date birthtime; //check
+    private String birthtime; //check
     private String providerId; //check
-    private Date xmlCreationdate; // check
-    private int guardianNo; // check
-    private int payerID; // check
+    private String xmlCreationDate; // check
+    private String guardianNo; // check
+    private String payerID; // check
     private String policyType; // check
     private String purpose; //chcek
-    public Patient(String ID, String patientrole, String firstName, String givenname, String familyname, String suffix,
-               String gender, Date birthtime, String providerid, Date xmlCreationDate, int guardianNo,
-               int payerID, String policyType, String purpose)
+    public Patient(String ID, String patientrole, String givenName, String familyname, String suffix,
+               String gender, String birthtime, String providerid, String xmlCreationDate, String guardianNo,
+               String payerID, String policyType, String purpose)
     {
         this.patientID = ID;
         this.patientRole = patientrole;
-        this.givenName = givenname;
+        this.givenName = givenName;
         this.familyName = familyname;
         this.suffix = suffix;
         this.gender = gender;
         this.birthtime = birthtime;
         this.providerId = providerid;
-        this.xmlCreationdate = xmlCreationDate;
+        this.xmlCreationDate = xmlCreationDate;
         this.guardianNo = guardianNo;
         this.payerID = payerID;
         this.policyType = policyType;
         this.purpose = purpose;
+    }
+
+    public String getPatientID() {
+        return patientID;
+    }
+
+    public String getPatientRole() {
+        return patientRole;
+    }
+
+    public String getGivenName() {
+        return givenName;
+    }
+
+    public String getFamilyName() {
+        return familyName;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public String getBirthtime() {
+        return birthtime;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public String getXmlCreationDate() {
+        return xmlCreationDate;
+    }
+
+    public String getGuardianNo() {
+        return guardianNo;
+    }
+
+    public String getPayerID() {
+        return payerID;
+    }
+
+    public String getPolicyType() {
+        return policyType;
+    }
+
+    public String getPurpose() {
+        return purpose;
     }
 }
