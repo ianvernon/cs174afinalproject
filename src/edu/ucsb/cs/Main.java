@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Scanner;
@@ -23,6 +24,15 @@ public class Main {
 	    //grabData("healthmessagesexchange2", "messages", "HealthInformationSystem");
         mainMenu();
 
+
+    }
+    public static void testDate() throws ParseException
+    {
+        String strDate = "8/27/2010 12:00:00 AM";
+        SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy hh:mm:ss a");
+        java.util.Date d = format.parse(strDate);
+        java.sql.Date d1 = new java.sql.Date(d.getTime());
+        System.out.println("d1.toString() = " + d1.toString());
     }
     public static void displayMainMenu()
     {
@@ -158,7 +168,7 @@ public class Main {
         {
             System.out.println("TestID: " + resultSet.getString("LabTestResultID"));
             System.out.println("VisitID: " + resultSet.getString("PatientVisitID"));
-            System.out.println("Date of test: " + resultSet.getString("LabTestPerformedDate"));
+            System.out.println("Date of test: " + resultSet.getDate("LabTestPerformedDate"));
             System.out.println("Type of test: " + resultSet.getString("LabTestType"));
             System.out.println("Reference Range: " + resultSet.getString("ReferenceRangeLow") + " - " +
                     resultSet.getString("ReferenceRangeHigh"));
@@ -186,7 +196,7 @@ public class Main {
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PatientPlan WHERE patientID='" + patientID + "'");
         while(resultSet.next())
         {
-            System.out.println("Activity: " + resultSet.getString("activity") + " performed on " + resultSet.getString("date"));
+            System.out.println("PlanID: " + resultSet.getString("planID") + "\n\tActivity: " + resultSet.getString("activity") + " performed on " + resultSet.getString("date"));
         }
     }
     public static void viewPatientGuardian(Connection connectHISDB, Patient p) throws SQLException
@@ -672,9 +682,9 @@ public class Main {
             }
             resultSet = statement.executeQuery("SELECT * FROM Author WHERE authorID='" + authorID + "'");
         }
-
+        resultSet.next();
         Author a = new Author(resultSet.getString("authorID"), resultSet.getString("authorTitle"),
-                                resultSet.getString("authorFirstName"), resultSet.getString("authorLastName"));
+                    resultSet.getString("authorFirstName"), resultSet.getString("authorLastName"));
         return a;
 
     }
@@ -723,7 +733,7 @@ public class Main {
                 // view lab test reports
                 else if(doctorMenuInput.equals("3"))
                 {
-                     viewPatientAuthors(connectHISDB, p);
+                     viewPatientLabTestReport(connectHISDB, p);
                 }
                 // view allergies
                 else if(doctorMenuInput.equals("4"))
@@ -743,6 +753,7 @@ public class Main {
                 // edit patient plan
                 else if(doctorMenuInput.equals("7"))
                 {
+                    System.out.println("here");
                     editPatientPlan(connectHISDB, p, a);
                 }
                 //edit a Patients allergies information
@@ -783,6 +794,7 @@ public class Main {
             query = "SELECT * FROM PatientPlan WHERE planID='" + planIdStr + "'";
             resultSet = statement.executeQuery(query);
         }
+        resultSet.next();
         PatientPlan patientPlan = new PatientPlan(resultSet.getString("planID"), resultSet.getString("date"), resultSet.getString("activity"),
                                                     resultSet.getString("patientID"));
         System.out.println("Which attributes of the plan would you like to edit? Select from the following. Exit with -1: ");
@@ -795,27 +807,30 @@ public class Main {
             if(attributeToEdit.equals("1"))
             {
                 Scanner dateScanner = new Scanner(System.in);
-                System.out.println("Enter date: (mm/dd/yyyy): ");
+                System.out.println("Enter date: (yyyy-mm-dd): ");
                 String date =  dateScanner.next();
-                while(!date.matches("(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/((19|20)\\d\\d)"))
+                while(!date.matches("((19|20)\\d\\d)-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])"))
                 {
                     System.out.println("Incorrect format. Try again.\nEnter date: (mm/dd/yyyy)");
                     date = dateScanner.next();
                 }
                 System.out.println("Date entered.");
-                System.out.println("Enter time: (hh:mm:ss AM/PM)");
-                String eatUpNewline = dateScanner.nextLine();
-                String time = dateScanner.nextLine();
-                while(!time.matches("(1[012]|0?[1-9]):([0-5][0-9]):([0-5][0-9])(\\s)(am|pm|AM|PM)"))
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd");
+
+                try
                 {
-                    System.out.println("Incorrect format. Try again.\nEnter time: (hh:mm:ss AM/PM)");
-                    time = dateScanner.nextLine();
+                    java.util.Date d = format.parse(date);
+                    java.sql.Date d2 = new java.sql.Date(d.getTime());
+                    String update = "UPDATE PatientPlan SET date='" + date + "' WHERE planID='" + patientPlan.getPlanID() + "'";
+                    statement.executeUpdate(update);
+                    System.out.println("Updated plan.");
+                    updateAssignedData(connectHISDB, p, a, "Plan");
                 }
-                String combinedDateTime = date +  " " + time;
-                String update = "UPDATE Plan SET date='" + combinedDateTime + "' WHERE planID='" + patientPlan.getPlanID() + "'";
-                statement.executeUpdate(update);
-                System.out.println("Updated plan.");
-                updateAssignedData(connectHISDB, p, a, "Plan");
+                catch(ParseException ex)
+                {
+                    System.out.println("Failure parsing date. Try again.");
+                }
+
             }
             //editing activity
             else if(attributeToEdit.equals("2"))
@@ -823,7 +838,7 @@ public class Main {
                 Scanner activityScanner = new Scanner(System.in);
                 System.out.println("Enter activity: ");
                 String activity = activityScanner.nextLine();
-                String update = "UPDATE Plan SET activity='" + activity + "' WHERE planID = '" + patientPlan.getPlanID() + "'";
+                String update = "UPDATE PatientPlan SET activity='" + activity + "' WHERE planID = '" + patientPlan.getPlanID() + "'";
                 statement.executeUpdate(update);
                 System.out.println("Updated plan.");
                 updateAssignedData(connectHISDB, p, a, "Plan");
@@ -946,67 +961,37 @@ public class Main {
         System.out.println("4: Identify authors with more than one patient.");
         System.out.println("Or, to exit, enter -1.");
     }
-    public static void numPatientsPerAllergy(Connection connectHISDB)
+    public static void numPatientsPerAllergy(Connection connectHISDB) throws SQLException
     {
-        Statement statement;
-        //correct query - ignore null?
-        String query = "SELECT PA.substance, COUNT(*)  FROM PatientAllergy PA GROUP BY PA.substance";
+        Statement statement = connectHISDB.createStatement();
+        String query = "SELECT PA.substance, COUNT(*)  FROM PatientAllergy PA WHERE PA.substance IS NOT NULL GROUP BY PA.substance";
+        ResultSet result = statement.executeQuery(query);
+        while(result.next())
+        {
+            System.out.println("Substance: " + result.getString("substance"));
+            System.out.println("\tAmount: " + result.getString("COUNT(*)"));
+        }
     }
-    public static  void numPatientsGT1Allergy(Connection connectHISDB)
+    public static  void numPatientsGT1Allergy(Connection connectHISDB) throws SQLException
     {
-        Statement statement;
-        // works
-        String query = "SELECT COUNT(*) FROM (SELECT COUNT(*) FROM PatientAllergy PA GROUP BY PA.patientID HAVING COUNT(*) > 1)mySubQuery";
+        Statement statement = connectHISDB.createStatement();
+        String query = "SELECT PA.patientID FROM PatientAllergy PA GROUP BY PA.patientID HAVING COUNT(*) > 1";
+        ResultSet result = statement.executeQuery(query);
+        System.out.println("Patients with more than one allergy:");
+        while(result.next())
+        {
+            System.out.println("Patient: " + result.getString("patientID"));
+        }
     }
-    // change Plan to contain actual dates for this to work (fml)
     public static void listSurgeryPatientsToday(Connection connectHISDB) throws SQLException
     {
-        String query = "SELECT * FROM PatientPlan";
-        Statement s = connectHISDB.createStatement();
-        ResultSet resultSet = s.executeQuery(query);
-        while(resultSet.next())
+        Statement statement = connectHISDB.createStatement();
+        String query = "SELECT PP.patientID FROM PatientPlan PP WHERE PP.date=CURDATE() AND PP.activity='Surgery'";
+        ResultSet result = statement.executeQuery(query);
+        System.out.println("Patients who have surgery today: ");
+        while(result.next())
         {
-            Calendar calendar = Calendar.getInstance();
-            int currMonth = calendar.get(Calendar.MONTH)+1;
-            int currYear = calendar.get(Calendar.YEAR);
-            int currDay = calendar.get(Calendar.DATE);
-            System.out.println("currMonth = " + currMonth);
-            System.out.println("currYear =  " + currYear);
-            System.out.println("currDate = " + currDay);
-            String date = resultSet.getString("date");
-            if(date != null)
-            {
-                String []splitDate = date.split("(/)|(\\s)");
-                for(int i = 0; i < 2; i++)
-                {
-                    if(i==0)
-                    {
-                        System.out.println("splitDate[0] = " + splitDate[0]);
-                    }
-                    else if(i==1)
-                    {
-                        System.out.println("splitDate[1] = " + splitDate[1]);
-                    }
-                    else if(i==2)
-                    {
-                        System.out.println("splitDate[2] = " + splitDate[2]);
-                    }
-                }
-                String currMonthStr = currMonth + "";
-                String currDateStr = currDay + "";
-                String currYearStr = currYear + "";
-                if(splitDate[2].equals(currYearStr))
-                {
-                  if(splitDate[0].equals(currMonthStr))
-                  {
-                      if(splitDate[1].equals(currDateStr))
-                      {
-                          System.out.println("today's date achieved");
-                      }
-                  }
-                }
-            }
-
+            System.out.println("Patient: " + result.getString("patientID"));
         }
     }
     public static void listAuthorsWithG1Patient(Connection connectHISDB)
@@ -1256,14 +1241,23 @@ public class Main {
 
                 /********* LABTESTREPORT ***********/
 
+                java.sql.Date d1 = null;
+                if(labTestPerformDate != null) {
+                    SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy hh:mm:ss a");
+
+                    java.util.Date d = format.parse(labTestPerformDate);
+                    d1 = new java.sql.Date(d.getTime());
+                }
                 PreparedStatement ltrStmt = connectHISDB.prepareStatement(
                         "INSERT INTO LabTestReport " +
                                 "(LabTestResultID, PatientVisitID, LabTestPerformedDate, LabTestType, ReferenceRangeLow, ReferenceRangeHigh, TestResultValue, patientID) "
                                 + "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE LabTestResultID=LabTestResultID, PatientVisitID=PatientVisitID, LabTestType=LabTestType, ReferenceRangeLow=ReferenceRangeLow, ReferenceRangeHigh=ReferenceRangeHigh, TestResultValue=TestResultValue, patientID=patientID");
 
+
+
                 ltrStmt.setString(1, labTestResultIdStr);
                 ltrStmt.setString(2, patientIdStr);
-                ltrStmt.setString(3, labTestPerformDate);
+                ltrStmt.setDate(3, d1);
                 ltrStmt.setString(4, labTestType);
                 ltrStmt.setString(5, referenceRangeLow);
                 ltrStmt.setString(6, referenceRangeHigh);
@@ -1315,8 +1309,17 @@ public class Main {
                 {
                     planIdStr = "000";
                 }
+
+                java.sql.Date d2 = null;
+                if(scheduledDate != null) {
+                    SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy hh:mm:ss a");
+
+                    java.util.Date d = format.parse(scheduledDate);
+                    d2 = new java.sql.Date(d.getTime());
+                }
+
                 planStatement.setString(1, planIdStr);
-                planStatement.setString(2, scheduledDate);
+                planStatement.setDate(2, d2);
                 planStatement.setString(3, activity);
                 planStatement.setString(4, patientIdStr);
 
@@ -1329,9 +1332,6 @@ public class Main {
                 + "' WHERE patientId='" + patientIdStr+ "'");
 
                 updateLastAccessed.executeUpdate();
-
-
-
             }
         }
         catch(Exception ex)
