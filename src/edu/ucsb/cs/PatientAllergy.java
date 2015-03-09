@@ -13,6 +13,7 @@ public class PatientAllergy
 
         public PatientAllergy(String allergyID, String substance, String reaction, String status, String patientID)
         {
+            this.allergyID = allergyID;
             this.substance = substance;
             this.reaction = reaction;
             this.status = status;
