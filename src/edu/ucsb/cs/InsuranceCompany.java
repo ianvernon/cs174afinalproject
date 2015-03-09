@@ -5,12 +5,20 @@ package edu.ucsb.cs;
  */
 public class InsuranceCompany
 {
-    private int payerID;
+    private String payerID;
     private String name;
 
-    public InsuranceCompany(int payerID, String name)
+    public InsuranceCompany(String payerID, String name)
     {
         this.payerID = payerID;
         this.name = name;
+    }
+
+    public String getPayerID() {
+        return payerID;
+    }
+
+    public String getName() {
+        return name;
     }
 }

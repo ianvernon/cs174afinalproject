@@ -5,15 +5,27 @@ package edu.ucsb.cs;
  */
 public class Assigned
 {
-    private int authorID;
-    private int patientID;
+    private String authorID;
+    private String patientID;
     private String participatingRole;
 
-    public Assigned(int authorID, int patientID, String participatingRole)
+    public Assigned(String authorID, String patientID, String participatingRole)
     {
         this.authorID = authorID;
         this.patientID = patientID;
         this.participatingRole = participatingRole;
     }
 
+    public String getAuthorID() {
+
+        return authorID;
+    }
+
+    public String getPatientID() {
+        return patientID;
+    }
+
+    public String getParticipatingRole() {
+        return participatingRole;
+    }
 }

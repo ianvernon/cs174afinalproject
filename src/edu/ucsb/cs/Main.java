@@ -18,7 +18,7 @@ public class Main {
     public static void main(String[] args)
     {
 
-	    //grabData("healthmessagesexchange2", "messages", "HealthInformationSystem");
+	    grabData("healthmessagesexchange2", "messages", "HealthInformationSystem");
         mainMenu();
 
 
@@ -97,7 +97,7 @@ public class Main {
         int currentYear = c.get(Calendar.YEAR);
         int currentMonth = c.get(Calendar.MONTH)+1;
         int currentDay = c.get(Calendar.DAY_OF_MONTH);*/
-        DateFormat timeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+        DateFormat timeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
         String s = timeFormat.format(new java.util.Date());
         return s;
     }
@@ -836,7 +836,7 @@ public class Main {
             resultSet = statement.executeQuery(query);
         }
         resultSet.next();
-        PatientPlan patientPlan = new PatientPlan(resultSet.getString("planID"), resultSet.getString("date"), resultSet.getString("activity"),
+        PatientPlan patientPlan = new PatientPlan(resultSet.getString("planID"), resultSet.getTimestamp("date"), resultSet.getString("activity"),
                                                     resultSet.getString("patientID"));
         System.out.println("Which attributes of the plan would you like to edit? Select from the following. Exit with -1: ");
         System.out.println("1: date");
@@ -1138,8 +1138,6 @@ public class Main {
      */
     public static void grabData(String sourceDb, String sourceTable, String destDb)
     {
-        //System.out.println("Hello world!!!!!");
-
         Connection sourceConnect = null;
         Statement statement = null;
         ResultSet resultSet = null;
@@ -1162,258 +1160,317 @@ public class Main {
 
             while(resultSet.next())
             {
-
                 String currentDateAndTime = getCurrentDate();
-                //grab all data from table
                 String last_accessed = resultSet.getString("Last_Accessed");
-                String patientIdStr = resultSet.getString("patientId");
-                int patientIdInt = Integer.parseInt(patientIdStr);
-                String givenName = resultSet.getString("GivenName");
-                String familyName = resultSet.getString("FamilyName");
-                String birthTime = resultSet.getString("BirthTime");
-                String providerIdStr = resultSet.getString("providerId");
-                //int providerIdInt = Integer.parseInt(providerIdStr);
-                String guardianNoStr = resultSet.getString("GuardianNo");
-                //int guardianNoInt = Integer.parseInt(guardianNoStr);
-                String relationship = resultSet.getString("Relationship");
-                String firstName = resultSet.getString("FirstName");
-                String lastName = resultSet.getString("LastName");
-                String phone = resultSet.getString("phone");
-                String address = resultSet.getString("address");
-                String city = resultSet.getString("city");
-                String state = resultSet.getString("state");
-                String zip = resultSet.getString("zip");
-                String authorIdStr = resultSet.getString("AuthorId");
-                //int authorIdInt = Integer.parseInt(authorIdStr);
-                String authorTitle = resultSet.getString("AuthorTitle");
-                String authorFirstName = resultSet.getString("AuthorFirstName");
-                String authorLastName = resultSet.getString("AuthorLastName");
-                String participatingRole = resultSet.getString("ParticipatingRole");
-                String payerIdStr = resultSet.getString("PayerId");
-                //int payerIdInt = Integer.parseInt(payerIdStr);
-                String name = resultSet.getString("Name");
-                String policyHolder = resultSet.getString("PolicyHolder");
-                String policyType = resultSet.getString("PolicyType");
-                String purpose = resultSet.getString("Purpose");
-                String relativeIdStr = resultSet.getString("RelativeId");
-                //int relativeId = Integer.parseInt("RelativeId");
-                String relation = resultSet.getString("Relation");
-                String ageStr = resultSet.getString("age");
-                //  int age = Integer.parseInt(ageStr);
-                String diagnosis = resultSet.getString("Diagnosis");
-                String idStr = resultSet.getString("Id");
-                // int id = Integer.parseInt(idStr);
-                String substance = resultSet.getString("Substance");
-                String reaction = resultSet.getString("Reaction");
-                String status = resultSet.getString("Status");
-                String labTestResultIdStr = resultSet.getString("LabTestResultId");
-                // int labTestResultId = Integer.parseInt(labTestResultIdStr);
-                String patientVisitIdStr = resultSet.getString("PatientVisitId");
-                String labTestPerformDate = resultSet.getString("LabTestPerformedDate");
-                String labTestType = resultSet.getString("LabTestType");
-                String testResultValue = resultSet.getString("TestResultValue");
-                String referenceRangeHigh = resultSet.getString("ReferenceRangeHigh");
-                String referenceRangeLow = resultSet.getString("ReferenceRangeLow");
-                String planIdStr = resultSet.getString("PlanId");
-                //int planId = Integer.parseInt(planIdStr);
-                String activity = resultSet.getString("Activity");
-                String scheduledDate = resultSet.getString("ScheduledDate");
-
-                String suffix = "";
-                String gender = "";
-                String patientRole = "";
-                // execute queries
-
-                //TODO: do we need this given current setup?
-                if(!last_accessed.equals(currentDateAndTime)) {
-                }
-                /********* INSURANCE COMPANY ************/
-                PreparedStatement icStmt = connectHISDB.prepareStatement(
-                        "INSERT INTO InsuranceCompany " +
-                                "(payerID, name) VALUES(?, ?) ON DUPLICATE KEY UPDATE payerID=payerID, name=name");
-
-                icStmt.setString(1, payerIdStr);
-                icStmt.setString(2, name);
-
-                icStmt.executeUpdate();
-
-                /********* GUARDIAN ***********/
-
-                PreparedStatement guardianStmt = connectHISDB.prepareStatement(
-                        "INSERT INTO Guardian " +
-                                "(guardianNo, givenName, familyName, phone, address, city, state, zip) " +
-                                "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE guardianNo=guardianNo, givenName=givenName, familyName=familyName,"+
-                                " phone=phone, address=address, city=city, state=state, zip=zip");
-                guardianStmt.setString(1, guardianNoStr);
-                guardianStmt.setString(2, givenName);
-                guardianStmt.setString(3, familyName);
-                guardianStmt.setString(4, phone);
-                guardianStmt.setString(5, address);
-                guardianStmt.setString(6, city);
-                guardianStmt.setString(7, state);
-                guardianStmt.setString(8, zip);
-
-                guardianStmt.executeUpdate();
-
-                /********* AUTHOR **********/
-
-                PreparedStatement authorStmt = connectHISDB.prepareStatement(
-                        "INSERT INTO Author " +
-                                "(authorID, authorTitle, authorFirstName, authorLastName) "
-                                + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID, authorFirstName=authorFirstName, authorLastName=authorLastName, authorTitle=authorTitle");
-
-                authorStmt.setString(1, authorIdStr);
-                authorStmt.setString(2, authorTitle);
-                authorStmt.setString(3, authorFirstName);
-                authorStmt.setString(4, authorLastName);
-
-                authorStmt.executeUpdate();
-
-
-                /************* PATIENT ******************/
-
-                PreparedStatement patientStmt = connectHISDB.prepareStatement(
-                        "INSERT INTO Patient " +
-                                "(patientID, suffix, familyName, givenName, gender, birthTime, providerID, xmlHealthCreationDate, guardianNo, payerID, patientRole, policyType, purpose) " +
-                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientID=patientID, xmlHealthCreationDate=xmlHealthCreationDate,"+
-                                "suffix=suffix, familyName=familyName, givenName=givenName, gender=gender, birthTime=birthTime, providerID=providerID, guardianNo=guardianNo," +
-                                "payerID=payerID, patientRole=patientRole, policyType=policyType, purpose=purpose");
-
-                patientStmt.setString(1, patientIdStr);
-                patientStmt.setString(2, suffix);
-                patientStmt.setString(3, familyName);
-                patientStmt.setString(4, givenName);
-                patientStmt.setString(5, gender);
-                patientStmt.setString(6, birthTime);
-                patientStmt.setString(7, providerIdStr);
-                patientStmt.setString(8, currentDateAndTime);
-                patientStmt.setString(9, guardianNoStr);
-                patientStmt.setString(10, payerIdStr);
-                patientStmt.setString(11, patientRole);
-                patientStmt.setString(12, policyType);
-                patientStmt.setString(13, purpose);
-
-                patientStmt.executeUpdate();
-
-                /************** ASSIGNED **************/
-
-                PreparedStatement assignedStmt = connectHISDB.prepareStatement(
-                        "INSERT INTO Assigned " +
-                                "(authorID, patientID, participatingRole)" +
-                                " VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID , patientID=patientID, participatingRole=participatingRole");
-
-                assignedStmt.setString(1, authorIdStr);
-                assignedStmt.setString(2, patientIdStr);
-                assignedStmt.setString(3, participatingRole);
-
-                assignedStmt.executeUpdate();
-
-                /********* LABTESTREPORT ***********/
-
-                /*java.sql.Date d1 = null;
-                if(labTestPerformDate != null) {
-                    SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy hh:mm:ss a");
-
-                    java.util.Date d = format.parse(labTestPerformDate);
-                    d1 = new java.sql.Date(d.getTime());
-
-                }   */
-
-                java.sql.Timestamp ts1 = null;
-                if(labTestPerformDate != null) {
-                    SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy HH:mm:ss a");
-                    java.util.Date d = format.parse(labTestPerformDate);
-                    ts1 = new Timestamp(d.getTime());
-                }
-                PreparedStatement ltrStmt = connectHISDB.prepareStatement(
-                        "INSERT INTO LabTestReport " +
-                                "(LabTestResultID, PatientVisitID, LabTestPerformedDate, LabTestType, ReferenceRangeLow, ReferenceRangeHigh, TestResultValue, patientID) "
-                                + "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE LabTestResultID=LabTestResultID, PatientVisitID=PatientVisitID, LabTestType=LabTestType, ReferenceRangeLow=ReferenceRangeLow, ReferenceRangeHigh=ReferenceRangeHigh, TestResultValue=TestResultValue, patientID=patientID");
-
-
-
-                ltrStmt.setString(1, labTestResultIdStr);
-                ltrStmt.setString(2, patientVisitIdStr);
-                ltrStmt.setTimestamp(3, ts1);
-                ltrStmt.setString(4, labTestType);
-                ltrStmt.setString(5, referenceRangeLow);
-                ltrStmt.setString(6, referenceRangeHigh);
-                ltrStmt.setString(7, testResultValue);
-                ltrStmt.setString(8, patientIdStr);
-
-                ltrStmt.executeUpdate();
-
-                //System.out.println(familyName);
-
-                /*********** PatientRelative ***********/
-
-                PreparedStatement pRStatement = connectHISDB.prepareStatement(
-                        "INSERT INTO PatientRelative " +
-                                "(relativeID, age, diagnosis, patientID, relationship) " +
-                                "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE relativeID=relativeID , patientID=patientID , diagnosis=diagnosis, age=age, relationship=relationship");
-
-                pRStatement.setString(1, relativeIdStr);
-                pRStatement.setString(2, ageStr);
-                pRStatement.setString(3, diagnosis);
-                pRStatement.setString(4, patientIdStr);
-                pRStatement.setString(5, relationship);
-
-                pRStatement.executeUpdate();
-
-                /******** PatientAllergy ************/
-
-                PreparedStatement pAStatement = connectHISDB.prepareStatement(
-                        "INSERT INTO PatientAllergy " +
-                                "(allergyID, substance, reaction, status, patientID) " +
-                                "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE allergyID=allergyID, substance=substance, reaction=reaction, status=status, patientID=patientID");
-
-                pAStatement.setString(1, idStr);
-                pAStatement.setString(2, substance);
-                pAStatement.setString(3, reaction);
-                pAStatement.setString(4, status);
-                pAStatement.setString(5, patientIdStr);
-
-                pAStatement.executeUpdate();
-
-                /***** PatientPlan *********/
-
-                PreparedStatement planStatement = connectHISDB.prepareStatement(
-                        "INSERT INTO PatientPlan " +
-                                "(planID, date, activity, patientID)  "  +
-                                "VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE planID=planID, date=date, activity=activity, patientID=patientID");
-
-                if(planIdStr == null)
+                if(last_accessed == null)
                 {
-                    planIdStr = "000";
+                    last_accessed = currentDateAndTime;
+                }
+                SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
+                //java.util.Date currDate = df.parse(currentDateAndTime);
+                java.util.Date laDate = df.parse(last_accessed);
+
+                System.out.println("laDate = " + laDate.toString());
+                //check if patientID is in Patient table in HIS
+                String patientIdStr = resultSet.getString("patientId");
+                System.out.println("patientId = " + patientIdStr);
+                Statement xmlhcdStmt = connectHISDB.createStatement();
+                // see if patient is in Patient table
+                String hisQuery = "SELECT * FROM Patient WHERE patientID='" + patientIdStr + "'";
+                ResultSet patientQuery = xmlhcdStmt.executeQuery(hisQuery);
+                //if not, insert
+                if(!patientQuery.isBeforeFirst())
+                {
+                   // System.out.println("here");
+                    //grab all data from table
+                    //patient
+                    String givenName = resultSet.getString("GivenName");
+                    String familyName = resultSet.getString("FamilyName");
+                    String birthTime = resultSet.getString("BirthTime");
+                    String providerIdStr = resultSet.getString("providerId");
+                    //guardian
+                    String guardianNoStr = resultSet.getString("GuardianNo");
+                    String relationship = resultSet.getString("Relationship");
+                    String firstName = resultSet.getString("FirstName");
+                    String lastName = resultSet.getString("LastName");
+                    String phone = resultSet.getString("phone");
+                    String address = resultSet.getString("address");
+                    String city = resultSet.getString("city");
+                    String state = resultSet.getString("state");
+                    String zip = resultSet.getString("zip");
+                    //author
+                    String authorIdStr = resultSet.getString("AuthorId");
+                    String authorTitle = resultSet.getString("AuthorTitle");
+                    String authorFirstName = resultSet.getString("AuthorFirstName");
+                    String authorLastName = resultSet.getString("AuthorLastName");
+                    //asigned
+                    String participatingRole = resultSet.getString("ParticipatingRole");
+                    //insurance company
+                    String payerIdStr = resultSet.getString("PayerId");
+                    String name = resultSet.getString("Name");
+                    String policyHolder = resultSet.getString("PolicyHolder");
+                    String policyType = resultSet.getString("PolicyType");
+                    String purpose = resultSet.getString("Purpose");
+                    //relative
+                    String relativeIdStr = resultSet.getString("RelativeId");
+                    String relation = resultSet.getString("Relation");
+                    String ageStr = resultSet.getString("age");
+                    String diagnosis = resultSet.getString("Diagnosis");
+                    //allergy
+                    String idStr = resultSet.getString("Id");
+                    String substance = resultSet.getString("Substance");
+                    String reaction = resultSet.getString("Reaction");
+                    String status = resultSet.getString("Status");
+                    //lab test report
+                    String labTestResultIdStr = resultSet.getString("LabTestResultId");
+                    String patientVisitIdStr = resultSet.getString("PatientVisitId");
+                    String labTestPerformDate = resultSet.getString("LabTestPerformedDate");
+                    String labTestType = resultSet.getString("LabTestType");
+                    String testResultValue = resultSet.getString("TestResultValue");
+                    String referenceRangeHigh = resultSet.getString("ReferenceRangeHigh");
+                    String referenceRangeLow = resultSet.getString("ReferenceRangeLow");
+                    //plan
+                    String planIdStr = resultSet.getString("PlanId");
+                    String activity = resultSet.getString("Activity");
+                    String scheduledDate = resultSet.getString("ScheduledDate");
+
+                    String suffix = "";
+                    String gender = "";
+                    String patientRole = "";
+
+                    //create objects out of data that correspond to tables in HIS
+
+                    InsuranceCompany ic = new InsuranceCompany(payerIdStr, name);
+
+                    Guardian g = new Guardian(guardianNoStr, firstName, lastName, phone, address, city, state, zip);
+                    Author a = new Author(authorIdStr, authorTitle, authorFirstName, authorLastName);
+                    Patient p = new Patient(patientIdStr, patientRole, givenName, familyName, suffix, gender, birthTime, providerIdStr, currentDateAndTime,
+                                            guardianNoStr, payerIdStr, policyType, purpose);
+                    Assigned as = new Assigned(authorIdStr, patientIdStr, participatingRole);
+
+                    //format lab test performed date into timestamp for insertion into object
+                    java.sql.Timestamp ltrPd = null;
+                    if(labTestPerformDate != null) {
+                        SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy HH:mm:ss a");
+                        java.util.Date d = format.parse(labTestPerformDate);
+                        ltrPd = new Timestamp(d.getTime());
+                    }
+                    LabTestReport ltr = new LabTestReport(labTestResultIdStr, patientVisitIdStr, ltrPd, labTestType, referenceRangeLow,
+                                                          referenceRangeHigh, testResultValue, patientIdStr);
+                    PatientRelative pr = new PatientRelative(relativeIdStr, ageStr, diagnosis, patientIdStr, relation);
+                    PatientAllergy pa = new PatientAllergy(idStr, substance, reaction, status, patientIdStr);
+
+
+                    java.sql.Timestamp planDate = null;
+                    if(scheduledDate != null) {
+                        SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy HH:mm:ss a");
+
+                        java.util.Date d = format.parse(scheduledDate);
+                        planDate = new java.sql.Timestamp(d.getTime());
+                    }
+
+                    PatientPlan pp = new PatientPlan(planIdStr, planDate, activity, patientIdStr);
+
+                    //perform insertion of objects on tables
+
+                    /********* INSURANCE COMPANY ************/
+                    insertInsuranceCompany(connectHISDB, ic);
+                    /********* GUARDIAN ***********/
+
+                        insertGuardian(connectHISDB, g);
+                    /********* AUTHOR **********/
+                        insertAuthor(connectHISDB, a);
+                    /************* PATIENT ******************/
+                    insertPatient(connectHISDB, p);
+                    /************** ASSIGNED **************/
+                    insertAssigned(connectHISDB, as);
+                    /********* LABTESTREPORT ***********/
+                    insertLabTestReport(connectHISDB, ltr);
+                    /*********** PatientRelative ***********/
+
+                        insertPatientRelative(connectHISDB, pr);
+
+                    /******** PatientAllergy ************/
+                    if(idStr == null) {
+                        insertPatientAllergy(connectHISDB, pa);
+                    }
+                    /***** PatientPlan *********/
+                    if(planIdStr != null)
+                    {
+                        insertPatientPlan(connectHISDB, pp);
+                    }
+                    /********* UPDATE LAST ACCESSED FOR CURRENT ROW IN RESULTSET *********/
+                    PreparedStatement updateLastAccessed = sourceConnect.prepareStatement("UPDATE messages SET Last_Accessed='" + currentDateAndTime
+                            + "' WHERE patientId='" + patientIdStr+ "'");
+
+                    updateLastAccessed.executeUpdate();
+                }
+                else
+                {
+                    System.out.println("else!");
+                    patientQuery.next();
+                    String currPatientXmlDate = patientQuery.getString("xmlHealthCreationDate");
+                    System.out.println(currPatientXmlDate);
+                    java.util.Date currPatientXmlDateObj = df.parse(currPatientXmlDate);
+                    if(currPatientXmlDateObj.compareTo(laDate) < 0)
+                    {
+                        System.out.println("< 0 ");
+                    }
+
                 }
 
-                java.sql.Timestamp ts2 = null;
-                if(scheduledDate != null) {
-                    SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy HH:mm:ss a");
-
-                    java.util.Date d = format.parse(scheduledDate);
-                    ts2 = new java.sql.Timestamp(d.getTime());
-                }
-
-                planStatement.setString(1, planIdStr);
-                planStatement.setTimestamp(2, ts2);
-                planStatement.setString(3, activity);
-                planStatement.setString(4, patientIdStr);
-
-                planStatement.executeUpdate();
-
-
-                /********* UPDATE LAST ACCESSED FOR CURRENT ROW IN RESULTSET *********/
-
-                PreparedStatement updateLastAccessed = sourceConnect.prepareStatement("UPDATE messages SET Last_Accessed='" + currentDateAndTime
-                + "' WHERE patientId='" + patientIdStr+ "'");
-
-                updateLastAccessed.executeUpdate();
             }
         }
         catch(Exception ex)
         {
             ex.printStackTrace();
         }
+    }
+    public static void insertInsuranceCompany(Connection connectHISDB, InsuranceCompany ic) throws SQLException
+    {
+
+        PreparedStatement icStmt = connectHISDB.prepareStatement(
+                "INSERT INTO InsuranceCompany " +
+                        "(payerID, name) VALUES(?, ?) ON DUPLICATE KEY UPDATE payerID=payerID, name=name");
+
+        icStmt.setString(1, ic.getPayerID());
+        icStmt.setString(2, ic.getName());
+
+        icStmt.executeUpdate();
+    }
+    public static void insertGuardian(Connection connectHISDB, Guardian g) throws SQLException
+    {
+        PreparedStatement guardianStmt = connectHISDB.prepareStatement(
+                "INSERT INTO Guardian " +
+                        "(guardianNo, givenName, familyName, phone, address, city, state, zip) " +
+                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE guardianNo=guardianNo, givenName=givenName, familyName=familyName,"+
+                        " phone=phone, address=address, city=city, state=state, zip=zip");
+        guardianStmt.setString(1, g.getGuardianNo());
+        guardianStmt.setString(2, g.getGivenName());
+        guardianStmt.setString(3, g.getFamilyName());
+        guardianStmt.setString(4, g.getPhone());
+        guardianStmt.setString(5, g.getAddress());
+        guardianStmt.setString(6, g.getCity());
+        guardianStmt.setString(7, g.getState());
+        guardianStmt.setString(8, g.getZip());
+        guardianStmt.executeUpdate();
+    }
+    public static void insertAuthor(Connection connectHISDB, Author a) throws  SQLException
+    {
+        PreparedStatement authorStmt = connectHISDB.prepareStatement(
+                "INSERT INTO Author " +
+                        "(authorID, authorTitle, authorFirstName, authorLastName) "
+                        + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID, authorFirstName=authorFirstName, authorLastName=authorLastName, authorTitle=authorTitle");
+
+        authorStmt.setString(1, a.getAuthorID());
+        authorStmt.setString(2, a.getAuthorTitle());
+        authorStmt.setString(3, a.getAuthorFirstName());
+        authorStmt.setString(4, a.getAuthorLastName());
+
+        authorStmt.executeUpdate();
+    }
+    public static void insertPatient(Connection connectHISDB, Patient p) throws SQLException
+    {
+        PreparedStatement patientStmt = connectHISDB.prepareStatement(
+                "INSERT INTO Patient " +
+                        "(patientID, suffix, familyName, givenName, gender, birthTime, providerID, xmlHealthCreationDate, guardianNo, payerID, patientRole, policyType, purpose) " +
+                        " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientID=patientID, xmlHealthCreationDate=xmlHealthCreationDate,"+
+                        "suffix=suffix, familyName=familyName, givenName=givenName, gender=gender, birthTime=birthTime, providerID=providerID, guardianNo=guardianNo," +
+                        "payerID=payerID, patientRole=patientRole, policyType=policyType, purpose=purpose");
+
+        patientStmt.setString(1, p.getPatientID());
+        patientStmt.setString(2, p.getSuffix());
+        patientStmt.setString(3, p.getFamilyName());
+        patientStmt.setString(4, p.getGivenName());
+        patientStmt.setString(5, p.getGender());
+        patientStmt.setString(6, p.getBirthtime());
+        patientStmt.setString(7, p.getProviderId());
+        patientStmt.setString(8, p.getXmlCreationDate());
+        patientStmt.setString(9, p.getGuardianNo());
+        patientStmt.setString(10, p.getPayerID());
+        patientStmt.setString(11, p.getPatientRole());
+        patientStmt.setString(12, p.getPolicyType());
+        patientStmt.setString(13, p.getPurpose());
+
+        patientStmt.executeUpdate();
+
+    }
+    public static void insertAssigned(Connection connectHISDB, Assigned as) throws SQLException
+    {
+        PreparedStatement assignedStmt = connectHISDB.prepareStatement(
+                "INSERT INTO Assigned " +
+                        "(authorID, patientID, participatingRole)" +
+                        " VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID , patientID=patientID, participatingRole=participatingRole");
+
+        assignedStmt.setString(1, as.getAuthorID());
+        assignedStmt.setString(2, as.getPatientID());
+        assignedStmt.setString(3, as.getParticipatingRole());
+
+        assignedStmt.executeUpdate();
+    }
+    public static void insertLabTestReport(Connection connectHISDB, LabTestReport ltr) throws SQLException
+    {
+        PreparedStatement ltrStmt = connectHISDB.prepareStatement(
+                "INSERT INTO LabTestReport " +
+                        "(LabTestResultID, PatientVisitID, LabTestPerformedDate, LabTestType, ReferenceRangeLow, ReferenceRangeHigh, TestResultValue, patientID) "
+                        + "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE LabTestResultID=LabTestResultID, PatientVisitID=PatientVisitID, LabTestType=LabTestType, ReferenceRangeLow=ReferenceRangeLow, ReferenceRangeHigh=ReferenceRangeHigh, TestResultValue=TestResultValue, patientID=patientID");
+
+
+
+        ltrStmt.setString(1, ltr.getLabTestResultID());
+        ltrStmt.setString(2, ltr.getPatientVisitID());
+        ltrStmt.setTimestamp(3, ltr.getLabTestPerformedDate());
+        ltrStmt.setString(4, ltr.getLabTestType());
+        ltrStmt.setString(5, ltr.getReferenceRangeLow());
+        ltrStmt.setString(6, ltr.getReferenceRangeHigh());
+        ltrStmt.setString(7, ltr.getTestResultValue());
+        ltrStmt.setString(8, ltr.getPatientID());
+
+        ltrStmt.executeUpdate();
+
+    }
+    public static void insertPatientRelative(Connection connectHISDB, PatientRelative pr) throws SQLException
+    {
+        PreparedStatement pRStatement = connectHISDB.prepareStatement(
+                "INSERT INTO PatientRelative " +
+                        "(relativeID, age, diagnosis, patientID, relationship) " +
+                        "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE relativeID=relativeID , patientID=patientID , diagnosis=diagnosis, age=age, relationship=relationship");
+
+        pRStatement.setString(1, pr.getRelativeID());
+        pRStatement.setString(2, pr.getAge());
+        pRStatement.setString(3, pr.getDiagnosis());
+        pRStatement.setString(4, pr.getPatientID());
+        pRStatement.setString(5, pr.getRelationship());
+
+        pRStatement.executeUpdate();
+
+    }
+    public static void insertPatientAllergy(Connection connectHISDB, PatientAllergy pa) throws SQLException
+    {
+        PreparedStatement pAStatement = connectHISDB.prepareStatement(
+                "INSERT INTO PatientAllergy " +
+                        "(allergyID, substance, reaction, status, patientID) " +
+                        "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE allergyID=allergyID, substance=substance, reaction=reaction, status=status, patientID=patientID");
+
+        pAStatement.setString(1, pa.getAllergyID());
+        pAStatement.setString(2, pa.getSubstance());
+        pAStatement.setString(3, pa.getReaction());
+        pAStatement.setString(4, pa.getStatus());
+        pAStatement.setString(5, pa.getPatientID());
+
+        pAStatement.executeUpdate();
+    }
+    public static void insertPatientPlan(Connection connectHISDB, PatientPlan pp)  throws SQLException
+    {
+        PreparedStatement planStatement = connectHISDB.prepareStatement(
+                "INSERT INTO PatientPlan " +
+                        "(planID, date, activity, patientID)  "  +
+                        "VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE planID=planID, date=date, activity=activity, patientID=patientID");
+        planStatement.setString(1, pp.getPlanID());
+        planStatement.setTimestamp(2, pp.getDate());
+        planStatement.setString(3, pp.getActivity());
+        planStatement.setString(4, pp.getPatientID());
+
+        planStatement.executeUpdate();
     }
 }

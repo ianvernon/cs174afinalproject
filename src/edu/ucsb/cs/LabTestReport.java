@@ -1,5 +1,6 @@
 package edu.ucsb.cs;
 
+import java.sql.Timestamp;
 import java.util.Date;
 /**
  * Created by ianvernon on 3/3/15.
@@ -7,18 +8,18 @@ import java.util.Date;
 
 public class LabTestReport
 {
-    private int labTestResultID;
-    private int patientVisitID;
-    private Date labTestPerformedDate;
+    private String labTestResultID;
+    private String patientVisitID;
+    private Timestamp labTestPerformedDate;
     private String labTestType;
-    private double referenceRangeLow;
-    private double referenceRangeHigh;
-    private double testResultValue;
-    private int patientID;
+    private String referenceRangeLow;
+    private String referenceRangeHigh;
+    private String testResultValue;
+    private String patientID;
 
-    public LabTestReport(int labTestResultID, int patientVisitID, Date labTestPerformedDate,
-                         String labTestType, double referenceRangeLow, double referenceRangeHigh,
-                         double testResultValue, int patientID)
+    public LabTestReport(String labTestResultID, String patientVisitID, Timestamp labTestPerformedDate,
+                         String labTestType, String referenceRangeLow, String referenceRangeHigh,
+                         String testResultValue, String patientID)
     {
         this.labTestResultID = labTestResultID;
         this.patientVisitID = patientVisitID;
@@ -28,5 +29,37 @@ public class LabTestReport
         this.referenceRangeHigh = referenceRangeHigh;
         this.testResultValue = testResultValue;
         this.patientID = patientID;
+    }
+
+    public String getLabTestResultID() {
+        return labTestResultID;
+    }
+
+    public String getPatientVisitID() {
+        return patientVisitID;
+    }
+
+    public Timestamp getLabTestPerformedDate() {
+        return labTestPerformedDate;
+    }
+
+    public String getLabTestType() {
+        return labTestType;
+    }
+
+    public String getReferenceRangeLow() {
+        return referenceRangeLow;
+    }
+
+    public String getReferenceRangeHigh() {
+        return referenceRangeHigh;
+    }
+
+    public String getTestResultValue() {
+        return testResultValue;
+    }
+
+    public String getPatientID() {
+        return patientID;
     }
 }
