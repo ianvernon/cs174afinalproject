@@ -10,14 +10,14 @@ public class LabTestReport
 {
     private String labTestResultID;
     private String patientVisitID;
-    private Timestamp labTestPerformedDate;
+    private java.sql.Date labTestPerformedDate;
     private String labTestType;
     private String referenceRangeLow;
     private String referenceRangeHigh;
     private String testResultValue;
     private String patientID;
 
-    public LabTestReport(String labTestResultID, String patientVisitID, Timestamp labTestPerformedDate,
+    public LabTestReport(String labTestResultID, String patientVisitID, java.sql.Date labTestPerformedDate,
                          String labTestType, String referenceRangeLow, String referenceRangeHigh,
                          String testResultValue, String patientID)
     {
@@ -39,7 +39,7 @@ public class LabTestReport
         return patientVisitID;
     }
 
-    public Timestamp getLabTestPerformedDate() {
+    public java.sql.Date getLabTestPerformedDate() {
         return labTestPerformedDate;
     }
 

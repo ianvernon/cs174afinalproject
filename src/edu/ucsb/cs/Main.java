@@ -162,7 +162,7 @@ public class Main {
         {
             System.out.println("TestID: " + resultSet.getString("LabTestResultID"));
             System.out.println("VisitID: " + resultSet.getString("PatientVisitID"));
-            System.out.println("Date of test: " + resultSet.getTimestamp("LabTestPerformedDate"));
+            System.out.println("Date of test: " + resultSet.getDate("LabTestPerformedDate"));
             System.out.println("Type of test: " + resultSet.getString("LabTestType"));
             System.out.println("Reference Range: " + resultSet.getString("ReferenceRangeLow") + " - " +
                     resultSet.getString("ReferenceRangeHigh"));
@@ -190,7 +190,7 @@ public class Main {
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PatientPlan WHERE patientID='" + patientID + "'");
         while(resultSet.next())
         {
-            System.out.println("PlanID: " + resultSet.getString("planID") + "\n\tActivity: " + resultSet.getString("activity") + " performed on " + resultSet.getTimestamp("date"));
+            System.out.println("PlanID: " + resultSet.getString("planID") + "\n\tActivity: " + resultSet.getString("activity") + " performed on " + resultSet.getDate("date"));
         }
     }
     public static void viewPatientGuardian(Connection connectHISDB, Patient p) throws SQLException
@@ -733,6 +733,12 @@ public class Main {
                 return;
             }
             Author a = getAuthor(connectHISDB, authorID);
+            if(a == null)
+            {
+                System.out.println("Author not valid. Returning to main menu.");
+                displayMainMenu();
+                return;
+            }
             // display options to Doctor/Author
             String doctorMenuInput = "-2";
             while(!doctorMenuInput.equals("-1"))
@@ -836,7 +842,7 @@ public class Main {
             resultSet = statement.executeQuery(query);
         }
         resultSet.next();
-        PatientPlan patientPlan = new PatientPlan(resultSet.getString("planID"), resultSet.getTimestamp("date"), resultSet.getString("activity"),
+        PatientPlan patientPlan = new PatientPlan(resultSet.getString("planID"), resultSet.getDate("date"), resultSet.getString("activity"),
                                                     resultSet.getString("patientID"));
         System.out.println("Which attributes of the plan would you like to edit? Select from the following. Exit with -1: ");
         System.out.println("1: date");
@@ -856,37 +862,23 @@ public class Main {
                     date = dateScanner.next();
                 }
                 System.out.println("Date entered.");
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd");
-
-                try
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+;               try
                 {
-                    java.util.Date d = format.parse(date);
-                    java.sql.Date d2 = new java.sql.Date(d.getTime());
-
-                    System.out.println("Enter time: (hh:mm:ss AM/PM)");
-                    String eatUpNewline = dateScanner.nextLine();
-                    String time = dateScanner.nextLine();
-                    while(!time.matches("(1[012]|0?[1-9]):([0-5][0-9]):([0-5][0-9])(\\s)(am|pm|AM|PM)"))
-                    {
-                        System.out.println("Incorrect format. Try again.\nEnter time: (hh:mm:ss AM/PM)");
-                        time = dateScanner.nextLine();
-                    }
-                    String combinedDateTime = date +  " " + time;
-                    SimpleDateFormat planDateFormat = new SimpleDateFormat("yyy-mm-dd HH:mm:ss a");
-                    java.util.Date newDate = planDateFormat.parse(combinedDateTime);
-                    java.sql.Timestamp ts2 = new java.sql.Timestamp(newDate.getTime());
+                    java.util.Date date1 = format.parse(date);
+                    java.sql.Date date2 = new java.sql.Date(date1.getTime());
                     String update = "UPDATE PatientPlan SET date= ? WHERE planID= ?";
                     PreparedStatement preparedStatement = connectHISDB.prepareStatement(update);
-                    preparedStatement.setTimestamp(1, ts2);
+                    preparedStatement.setDate(1, date2);
                     preparedStatement.setString(2, patientPlan.getPlanID());
                     preparedStatement.executeUpdate();
                     System.out.println("Updated plan.");
                     updateAssignedData(connectHISDB, p, a, "Plan");
                 }
-                catch(ParseException ex)
-                {
-                    System.out.println("Failure parsing date. Try again.");
-                }
+            catch(ParseException ex)
+            {
+                ex.printStackTrace();
+            }
 
             }
             //editing activity
@@ -1045,7 +1037,7 @@ public class Main {
     public static void listSurgeryPatientsToday(Connection connectHISDB) throws SQLException
     {
         Statement statement = connectHISDB.createStatement();
-        String query = "SELECT PP.patientID FROM PatientPlan PP WHERE DATE(PP.date)=CURDATE() AND PP.activity='Surgery'";
+        String query = "SELECT PP.patientID FROM PatientPlan PP WHERE PP.date=CURDATE() AND PP.activity='Surgery'";
         ResultSet result = statement.executeQuery(query);
         System.out.println("Patients who have surgery today: ");
         while(result.next())
@@ -1167,7 +1159,7 @@ public class Main {
                     System.out.println("null last_accessed");
                     last_accessed = currentDateAndTime;
                 }
-                SimpleDateFormat df = new SimpleDateFormat("mm/dd/yyyy hh:mm:ss a");
+                SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
                 //java.util.Date currDate = df.parse(currentDateAndTime);
                 java.util.Date laDate = df.parse(last_accessed);
 
@@ -1248,11 +1240,11 @@ public class Main {
                     Assigned as = new Assigned(authorIdStr, patientIdStr, participatingRole);
 
                     //format lab test performed date into timestamp for insertion into object
-                    java.sql.Timestamp ltrPd = null;
+                    java.sql.Date ltrPd = null;
                     if(labTestPerformDate != null) {
-                        SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy HH:mm:ss a");
+                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss a");
                         java.util.Date d = format.parse(labTestPerformDate);
-                        ltrPd = new Timestamp(d.getTime());
+                        ltrPd = new java.sql.Date(d.getTime());
                     }
                     LabTestReport ltr = new LabTestReport(labTestResultIdStr, patientVisitIdStr, ltrPd, labTestType, referenceRangeLow,
                                                           referenceRangeHigh, testResultValue, patientIdStr);
@@ -1260,12 +1252,14 @@ public class Main {
                     PatientAllergy pa = new PatientAllergy(idStr, substance, reaction, status, patientIdStr);
 
 
-                    java.sql.Timestamp planDate = null;
+                    java.sql.Date planDate = null;
                     if(scheduledDate != null) {
-                        SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy HH:mm:ss a");
+                       // System.out.println("scheduled date is " + scheduledDate);
+                        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss a");
 
                         java.util.Date d = format.parse(scheduledDate);
-                        planDate = new java.sql.Timestamp(d.getTime());
+                        planDate = new java.sql.Date(d.getTime());
+                        //System.out.println("planDate.toString() " + planDate.toString());
                     }
 
                     PatientPlan pp = new PatientPlan(planIdStr, planDate, activity, patientIdStr);
@@ -1273,22 +1267,33 @@ public class Main {
                     //perform insertion of objects on tables
 
                     /********* INSURANCE COMPANY ************/
-                    insertInsuranceCompany(connectHISDB, ic);
+                    if(payerIdStr != null) {
+                        insertInsuranceCompany(connectHISDB, ic);
+                    }
                     /********* GUARDIAN ***********/
-
-                        insertGuardian(connectHISDB, g);
+                     if(guardianNoStr != null) {
+                         insertGuardian(connectHISDB, g);
+                     }
                     /********* AUTHOR **********/
+                    if(authorIdStr != null) {
                         insertAuthor(connectHISDB, a);
+                    }
                     /************* PATIENT ******************/
-                    insertPatient(connectHISDB, p);
+                    if(patientIdStr != null) {
+                        insertPatient(connectHISDB, p);
+                    }
                     /************** ASSIGNED **************/
-                    insertAssigned(connectHISDB, as);
+                    if(authorIdStr != null && patientIdStr != null) {
+                        insertAssigned(connectHISDB, as);
+                    }
                     /********* LABTESTREPORT ***********/
-                    insertLabTestReport(connectHISDB, ltr);
+                    if(labTestResultIdStr != null && patientVisitIdStr != null) {
+                        insertLabTestReport(connectHISDB, ltr);
+                    }
                     /*********** PatientRelative ***********/
-
-                        insertPatientRelative(connectHISDB, pr);
-
+                     if(relativeIdStr != null && patientIdStr != null && diagnosis != null) {
+                         insertPatientRelative(connectHISDB, pr);
+                     }
                     /******** PatientAllergy ************/
                     if(idStr != null) {
                         insertPatientAllergy(connectHISDB, pa);
@@ -1327,11 +1332,11 @@ public class Main {
                         Assigned as = new Assigned(authorIdStr, patientIdStr, participatingRole);
 
                         //format lab test performed date into timestamp for insertion into object
-                        java.sql.Timestamp ltrPd = null;
+                        java.sql.Date ltrPd = null;
                         if(labTestPerformDate != null) {
-                            SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy HH:mm:ss a");
+                            SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
                             java.util.Date d = format.parse(labTestPerformDate);
-                            ltrPd = new Timestamp(d.getTime());
+                            ltrPd = new Date(d.getTime());
                         }
                         LabTestReport ltr = new LabTestReport(labTestResultIdStr, patientVisitIdStr, ltrPd, labTestType, referenceRangeLow,
                                 referenceRangeHigh, testResultValue, patientIdStr);
@@ -1339,35 +1344,52 @@ public class Main {
                         PatientAllergy pa = new PatientAllergy(idStr, substance, reaction, status, patientIdStr);
 
 
-                        java.sql.Timestamp planDate = null;
+                        java.sql.Date planDate = null;
                         if(scheduledDate != null) {
-                            SimpleDateFormat format = new SimpleDateFormat("mm/dd/yyyy HH:mm:ss a");
+                            //System.out.println("scheduled date is " + scheduledDate);
+                            SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
 
                             java.util.Date d = format.parse(scheduledDate);
-                            planDate = new java.sql.Timestamp(d.getTime());
+                            planDate = new java.sql.Date(d.getTime());
                         }
-
+                       // System.out.println("planIdStr = " + planIdStr);
+                        //System.out.println("activity = " + activity);
+                        //System.out.println("patientIdStr = " + patientIdStr);
                         PatientPlan pp = new PatientPlan(planIdStr, planDate, activity, patientIdStr);
 
                         //perform insertion of objects on tables
 
                         /********* INSURANCE COMPANY ************/
-                        insertInsuranceCompany(connectHISDB, ic);
+                        if(payerIdStr != null) {
+                            insertInsuranceCompany(connectHISDB, ic);
+                        }
                         /********* GUARDIAN ***********/
-
-                        insertGuardian(connectHISDB, g);
+                        if(guardianNoStr != null)
+                        {
+                            insertGuardian(connectHISDB, g);
+                        }
                         /********* AUTHOR **********/
-                        insertAuthor(connectHISDB, a);
+                        if(authorIdStr != null) {
+                            insertAuthor(connectHISDB, a);
+                        }
                         /************* PATIENT ******************/
-                        insertPatient(connectHISDB, p);
+                        if(patientIdStr != null)
+                        {
+                            insertPatient(connectHISDB, p);
+                        }
                         /************** ASSIGNED **************/
-                        insertAssigned(connectHISDB, as);
+                        if(authorIdStr != null && patientIdStr != null) {
+                            insertAssigned(connectHISDB, as);
+                        }
                         /********* LABTESTREPORT ***********/
-                        insertLabTestReport(connectHISDB, ltr);
+                        if(labTestResultIdStr != null && patientVisitIdStr != null) {
+                            insertLabTestReport(connectHISDB, ltr);
+                        }
                         /*********** PatientRelative ***********/
-
-                        insertPatientRelative(connectHISDB, pr);
-
+                        if(relativeIdStr != null && patientIdStr != null && diagnosis != null)
+                        {
+                            insertPatientRelative(connectHISDB, pr);
+                        }
                         /******** PatientAllergy ************/
                         if(idStr != null) {
                             //System.out.println("second case idStr access");
@@ -1488,7 +1510,7 @@ public class Main {
 
         ltrStmt.setString(1, ltr.getLabTestResultID());
         ltrStmt.setString(2, ltr.getPatientVisitID());
-        ltrStmt.setTimestamp(3, ltr.getLabTestPerformedDate());
+        ltrStmt.setDate(3, ltr.getLabTestPerformedDate());
         ltrStmt.setString(4, ltr.getLabTestType());
         ltrStmt.setString(5, ltr.getReferenceRangeLow());
         ltrStmt.setString(6, ltr.getReferenceRangeHigh());
@@ -1520,7 +1542,7 @@ public class Main {
                 "INSERT INTO PatientAllergy " +
                         "(allergyID, substance, reaction, status, patientID) " +
                         "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE allergyID=allergyID, substance=substance, reaction=reaction, status=status, patientID=patientID");
-        System.out.println("pa.getAllergyID() = " + pa.getAllergyID());
+        //System.out.println("pa.getAllergyID() = " + pa.getAllergyID());
         pAStatement.setString(1, pa.getAllergyID());
         pAStatement.setString(2, pa.getSubstance());
         pAStatement.setString(3, pa.getReaction());
@@ -1536,7 +1558,8 @@ public class Main {
                         "(planID, date, activity, patientID)  "  +
                         "VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE planID=planID, date=date, activity=activity, patientID=patientID");
         planStatement.setString(1, pp.getPlanID());
-        planStatement.setTimestamp(2, pp.getDate());
+        planStatement.setDate(2, pp.getDate());
+        //System.out.println("pp.getDate() = " + pp.getDate());
         planStatement.setString(3, pp.getActivity());
         planStatement.setString(4, pp.getPatientID());
 
