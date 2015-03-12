@@ -17,7 +17,7 @@ public class Main {
     public static void main(String[] args)
     {
 
-	    grabData("healthmessagesexchange2", "messages", "HealthInformationSystem");
+	    grabData("healthmessagesexchange3", "messages2", "HealthInformationSystem");
         mainMenu();
 
 
@@ -1036,9 +1036,9 @@ public class Main {
     public static void listSurgeryPatientsToday(Connection connectHISDB) throws SQLException
     {
         Statement statement = connectHISDB.createStatement();
-        String query = "SELECT PP.patientID FROM PatientPlan PP WHERE PP.date=CURDATE() AND PP.activity='Surgery'";
+        String query = "SELECT PP.patientID FROM PatientPlan PP WHERE PP.date=CURDATE() AND PP.activity='surgery'";
         ResultSet result = statement.executeQuery(query);
-        System.out.println("Patients who have surgery today: ");
+        System.out.println("Patients who have 'surgery' today: ");
         while(result.next())
         {
             System.out.println("Patient: " + result.getString("patientID"));
@@ -1155,7 +1155,7 @@ public class Main {
                 String last_accessed = resultSet.getString("Last_Accessed");
                 if(last_accessed == null)
                 {
-                    System.out.println("null last_accessed");
+                    //System.out.println("null last_accessed");
                     last_accessed = currentDateAndTime;
                 }
                 SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
@@ -1372,7 +1372,7 @@ public class Main {
                             insertAuthor(connectHISDB, a);
                         }
                         /************* PATIENT ******************/
-                        if(patientIdStr != null)
+                        if(patientIdStr != null && guardianNoStr != null && payerIdStr != null)
                         {
                             insertPatient(connectHISDB, p);
                         }
@@ -1381,7 +1381,7 @@ public class Main {
                             insertAssigned(connectHISDB, as);
                         }
                         /********* LABTESTREPORT ***********/
-                        if(labTestResultIdStr != null && patientVisitIdStr != null) {
+                        if(labTestResultIdStr != null && patientVisitIdStr != null && patientIdStr != null) {
                             insertLabTestReport(connectHISDB, ltr);
                         }
                         /*********** PatientRelative ***********/
@@ -1390,12 +1390,12 @@ public class Main {
                             insertPatientRelative(connectHISDB, pr);
                         }
                         /******** PatientAllergy ************/
-                        if(idStr != null) {
+                        if(idStr != null && patientIdStr != null) {
                             //System.out.println("second case idStr access");
                             insertPatientAllergy(connectHISDB, pa);
                         }
                         /***** PatientPlan *********/
-                        if(planIdStr != null)
+                        if(planIdStr != null && patientIdStr != null)
                         {
                             insertPatientPlan(connectHISDB, pp);
                         }
