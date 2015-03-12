@@ -181,6 +181,19 @@ public class Main {
             System.out.println("Status: " + resultSet.getString("status"));
         }
     }
+    public static void viewPatientRelatives(Connection connectHISDB, Patient p) throws SQLException
+    {
+        System.out.println("***************RELATIVE INFO**************");
+        Statement statement = connectHISDB.createStatement();
+        String patientID = p.getPatientID();
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM PatientRelative WHERE patientID='" + patientID + "'");
+        while(resultSet.next())
+        {
+            System.out.println("Relation: " + resultSet.getString("relationship"));
+            System.out.println("Diagnosis: " + resultSet.getString("diagnosis"));
+            System.out.println("Age: " + resultSet.getString("age"));
+        }
+    }
     public static void viewPatientPlanInfo(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("*************** PLAN INFO ************");
@@ -565,6 +578,18 @@ public class Main {
                 resultSet.getString("purpose"));
         return p;
     }
+    public static void viewPatientInsuranceCompany(Connection connectHISDB, Patient p) throws SQLException
+    {
+        System.out.println("********** INSURANCE COMPANY INFORMATION ************");
+        Statement statement = connectHISDB.createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM InsuranceCompany WHERE payerID='" + p.getPayerID() + "'");
+        while(resultSet.next())
+        {
+            System.out.println("Patient's insurance company is " + resultSet.getString("name"));
+        }
+        System.out.println("******** FINISH INSURANCE COMPANY INFORMATION************");
+    }
+
     //done
     public static void patientCase()
     {
@@ -628,18 +653,28 @@ public class Main {
                 {
                    viewPatientPlanInfo(connectHISDB, p);
                 }
-                // view guardian information
+                // view relatives
                 else if(patientMenuInput.equals("6"))
+                {
+                    viewPatientRelatives(connectHISDB, p);
+                }
+                //view my insurance company
+                else if(patientMenuInput.equals("7"))
+                {
+                    viewPatientInsuranceCompany(connectHISDB, p);
+                }
+                // view guardian information
+                else if(patientMenuInput.equals("8"))
                 {
                     viewPatientGuardian(connectHISDB, p);
                 }
                 // edit patient information
-                else if(patientMenuInput.equals("7"))
+                else if(patientMenuInput.equals("9"))
                 {
                     editPatientInfo(connectHISDB, p);
                 }
                 //edit guardian information
-                else if(patientMenuInput.equals("8"))
+                else if(patientMenuInput.equals("10"))
                 {
                     editGuardianInfo(connectHISDB, p);
                 }
@@ -677,9 +712,11 @@ public class Main {
         System.out.println("3: View my previous Lab Test Reports.");
         System.out.println("4: View my allergies.");
         System.out.println("5: View my plan.");
-        System.out.println("6: View my guardian information.");
-        System.out.println("7: Edit my information in Patient table.");
-        System.out.println("8: Edit my Guardian information.");
+        System.out.println("6: View my relatives.");
+        System.out.println("7: View my insurance company.");
+        System.out.println("8: View my guardian information.");
+        System.out.println("9: Edit my information in Patient table.");
+        System.out.println("10: Edit my Guardian information.");
 
 
     }
