@@ -176,6 +176,7 @@ public class Main {
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PatientAllergy WHERE patientID='" + patientID + "'");
         while(resultSet.next())
         {
+            System.out.println("AllergyID " + resultSet.getString("allergyID"));
             System.out.println("Substance: " + resultSet.getString("substance"));
             System.out.println("Reaction: " + resultSet.getString("reaction"));
             System.out.println("Status: " + resultSet.getString("status"));
@@ -230,6 +231,10 @@ public class Main {
         {
             System.out.println("Too big of a suffix. Try again.");
             suffix = suffixScanner.next();
+            if(suffix.equals("-1"))
+            {
+                return;
+            }
         }
         String updateSuffixQuery = "UPDATE Patient SET suffix='" + suffix + "' WHERE patientID='"
                 + p.getPatientID() + "'";
@@ -255,6 +260,10 @@ public class Main {
         {
             System.out.println("String size too big. Try again.");
             editGenderStr = editGenderScanner.next();
+            if(editGenderStr.equals("-1"))
+            {
+                return;
+            }
         }
         String updateGenderQuery = "UPDATE Patient SET gender='" + editGenderStr + "' WHERE patientID='"
                 + p.getPatientID() + "'";
@@ -279,6 +288,10 @@ public class Main {
         {
             System.out.println("Too long of a string. Try again.");
             familyName= familyNameScanner.next();
+            if(familyName.equals("-1"))
+            {
+                return;
+            }
         }
         String updateLastNameQuery = "UPDATE Patient SET familyName='" + familyName + "' WHERE patientID='" + p.getPatientID() + "'";
         int numRowsUpdated = statement.executeUpdate(updateLastNameQuery);
@@ -302,6 +315,11 @@ public class Main {
         {
             System.out.println("Too long of a string. Try again.");
             givenName = givenNameScanner.next();
+            if(givenName.equals("-1"))
+            {
+                return;
+            }
+
         }
         String firstNameUpdate = "UPDATE Patient SET givenName='" + givenName + "' WHERE patientID='" + p.getPatientID() + "'";
         int numRowsUpdated = statement.executeUpdate(firstNameUpdate);
@@ -326,6 +344,10 @@ public class Main {
         {
             System.out.println("Incorrect format. Try again.\nEnter date: (mm/dd/yyyy)");
             date = birthtimeScanner.next();
+            if(date.equals("-1"))
+            {
+                return;
+            }
         }
         System.out.println("Date entered.");
         System.out.println("Enter time: (hh:mm:ss AM/PM)");
@@ -335,6 +357,10 @@ public class Main {
         {
             System.out.println("Incorrect format. Try again.\nEnter time: (hh:mm:ss AM/PM)");
             time = birthtimeScanner.nextLine();
+            if(time.equals("-1"))
+            {
+                return;
+            }
         }
         String combinedDateTime = date +  " " + time;
         String updateStr = "UPDATE Patient SET birthTime='" + combinedDateTime + "' WHERE patientID='" + p.getPatientID() + "'";
@@ -402,6 +428,10 @@ public class Main {
         Scanner editGuardianScanner = new Scanner(System.in);
         Statement statement = connectHISDB.createStatement();
         String givenName = editGuardianScanner.next();
+        if(givenName.equals("-1"))
+        {
+            return;
+        }
         String updateGuardianStr = "UPDATE Guardian SET givenName='" + givenName + "' WHERE guardianNo='" + p.getGuardianNo() + "'";
         int numRowsUpdated = statement.executeUpdate(updateGuardianStr);
         if(numRowsUpdated > 0)
@@ -421,6 +451,10 @@ public class Main {
         Scanner editGuardianScanner = new Scanner(System.in);
         Statement statement = connectHISDB.createStatement();
         String familyName = editGuardianScanner.next();
+        if(familyName.equals("-1"))
+        {
+            return;
+        }
         String updateGuardianStr = "UPDATE Guardian SET familyName='" + familyName + "' WHERE guardianNo='" + p.getGuardianNo() + "'";
         int numRowsUpdated = statement.executeUpdate(updateGuardianStr);
         if(numRowsUpdated > 0)
@@ -434,15 +468,23 @@ public class Main {
     }
     public static void editGuardianPhone(Connection connectHISDB, Patient p) throws SQLException
     {
-        System.out.println("Enter phone number: ");
+        System.out.println("Enter phone number (format (123) 456-7890: ");
         Scanner editGuardianScanner = new Scanner(System.in);
         Statement statement = connectHISDB.createStatement();
-        String eatAnyLines = editGuardianScanner.nextLine();
+        //String eatAnyLines = editGuardianScanner.nextLine();
         String phone = editGuardianScanner.nextLine();
+        if(phone.equals("-1"))
+        {
+            return;
+        }
         while(!phone.matches("([(]\\d\\d\\d[)]|(\\d\\d\\d))((\\s)(\\d\\d\\d)(\\s)(\\d\\d\\d\\d)|(-)(\\d\\d\\d)(-)(\\d\\d\\d\\d))"))
         {
             System.out.println("Incorrect format, please try again:");
             phone = editGuardianScanner.nextLine();
+            if(phone.equals("-1"))
+            {
+                return;
+            }
         }
         String updateGuardianStr = "UPDATE Guardian SET phone='" + phone + "' WHERE guardianNo='" + p.getGuardianNo() + "'";
         int numRowsUpdated = statement.executeUpdate(updateGuardianStr);
@@ -468,10 +510,18 @@ public class Main {
         // get street number
         System.out.println("Enter street number: ");
         streetNum = addressScanner.next();
+        if(streetNum.equals("-1"))
+        {
+            return;
+        }
         while(!streetNum.matches("[0-9]+"))
         {
             System.out.println("Please enter a valid number: ");
             streetNum = addressScanner.next();
+            if(streetNum.equals("-1"))
+            {
+                return;
+            }
         }
         // get street name
         String newlineEater = addressScanner.nextLine();
@@ -481,29 +531,57 @@ public class Main {
         {
             System.out.println("Please use letters only in street names: ");
             streetName = addressScanner.nextLine();
+            if(streetName.equals("-1"))
+            {
+                return;
+            }
         }
 
         address = streetNum + " " + streetName;
         System.out.println("Enter city: ");
         city = addressScanner.nextLine();
+        if(city.equals("-1"))
+        {
+            return;
+        }
         while(!city.matches("[\\w\\s]+"))
         {
             System.out.println("Please use letters only in city names: ");
             city = addressScanner.nextLine();
+            if(city.equals("-1"))
+            {
+                return;
+            }
         }
         System.out.println("Enter state's abbreviation: ");
         state = addressScanner.nextLine();
+        if(city.equals("-1"))
+        {
+            return;
+        }
         while(!state.matches("([a-z]|[A-Z])([a-z]|[A-Z])"))
         {
             System.out.println("Please enter state correctly: ");
             state = addressScanner.nextLine();
+            if(city.equals("-1"))
+            {
+                return;
+            }
         }
         System.out.println("Enter zip: ");
         zip = addressScanner.nextLine();
+        if(zip.equals("-1"))
+        {
+            return;
+        }
         while(!zip.matches("[0-9]{4,5}"))
         {
             System.out.println("Please enter valid zip code: ");
             zip = addressScanner.nextLine();
+            if(zip.equals("-1"))
+            {
+                return;
+            }
         }
         updateAddress.executeUpdate("UPDATE Guardian SET address='" + address + "' WHERE guardianNo='" + guardianNo + "'");
         updateCity.executeUpdate("UPDATE Guardian SET city='" + city + "' WHERE guardianNo='" + guardianNo + "'");
@@ -833,6 +911,14 @@ public class Main {
                 {
                     editAllergiesInformation(connectHISDB, p, a);
                 }
+                else if(doctorMenuInput.equals("9"))
+                {
+                    viewPatientRelatives(connectHISDB, p);
+                }
+                else if(doctorMenuInput.equals("10"))
+                {
+                    viewPatientInsuranceCompany(connectHISDB, p);
+                }
             }
 
         }
@@ -892,10 +978,20 @@ public class Main {
                 Scanner dateScanner = new Scanner(System.in);
                 System.out.println("Enter date: (yyyy-mm-dd): ");
                 String date =  dateScanner.next();
+                if(date.equals("-1"))
+                {
+                    //displayDoctorMenu();
+                    return;
+                }
                 while(!date.matches("((19|20)\\d\\d)-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])"))
                 {
                     System.out.println("Incorrect format. Try again.\nEnter date: (mm/dd/yyyy)");
                     date = dateScanner.next();
+                    if(date.equals("-1"))
+                    {
+                        //displayDoctorMenu();
+                        return;
+                    }
                 }
                 System.out.println("Date entered.");
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -911,10 +1007,10 @@ public class Main {
                     System.out.println("Updated plan.");
                     updateAssignedData(connectHISDB, p, a, "Plan");
                 }
-            catch(ParseException ex)
-            {
-                ex.printStackTrace();
-            }
+                catch(ParseException ex)
+                {
+                    ex.printStackTrace();
+                }
 
             }
             //editing activity
@@ -923,6 +1019,11 @@ public class Main {
                 Scanner activityScanner = new Scanner(System.in);
                 System.out.println("Enter activity: ");
                 String activity = activityScanner.nextLine();
+                if(activity.equals("-1"))
+                {
+                    //displayDoctorMenu();
+                    return;
+                }
                 String update = "UPDATE PatientPlan SET activity='" + activity + "' WHERE planID = '" + patientPlan.getPlanID() + "'";
                 statement.executeUpdate(update);
                 System.out.println("Updated plan.");
@@ -946,6 +1047,10 @@ public class Main {
             viewPatientAllergies(connectHISDB, p);
             Scanner allergyScanner = new Scanner(System.in);
             String allergyIdStr = allergyScanner.next();
+            if(allergyIdStr.equals("-1"))
+            {
+                return;
+            }
             String query = "SELECT * FROM PatientAllergy WHERE allergyID='" + allergyIdStr + "' AND patientID='" + p.getPatientID() + "'";
             Statement statement = connectHISDB.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
@@ -955,10 +1060,14 @@ public class Main {
                 System.out.println("Inputted allergyID is not valid.");
                 System.out.println("Enter valid allergyID");
                 allergyIdStr = allergyScanner.next();
+                if(allergyIdStr.equals("-1"))
+                {
+                    return;
+                }
                 query = "SELECT * FROM PatientAllergy WHERE allergyID='" + allergyIdStr + "'";
                 resultSet = statement.executeQuery(query);
             }
-
+            resultSet.next();
             PatientAllergy patientAllergy = new PatientAllergy(resultSet.getString("allergyID"), resultSet.getString("substance"), resultSet.getString("reaction"),
                                                                resultSet.getString("status"), resultSet.getString("patientID"));
             System.out.println("What attributes of this allergy would you like to edit? Select from the following. Exit with -1: ");
@@ -1037,6 +1146,8 @@ public class Main {
         System.out.println("6: View a Patient's guardian information.");
         System.out.println("7: Edit a Patient's plan.");
         System.out.println("8: Edit a Patient's allergies data.");
+        System.out.println("9: View a Patient's relatives.");
+        System.out.println("10: View a Patient's insurance company.");
 
     }
     public static void displayAdminMenu()
