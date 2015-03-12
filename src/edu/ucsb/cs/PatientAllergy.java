@@ -1,5 +1,9 @@
 package edu.ucsb.cs;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 /**
  * Created by ianvernon on 3/3/15.
  */
@@ -38,5 +42,20 @@ public class PatientAllergy
 
     public String getAllergyID() {
         return allergyID;
+    }
+    public void insertPatientAllergy(Connection connectHISDB) throws SQLException
+    {
+        PreparedStatement pAStatement = connectHISDB.prepareStatement(
+                "INSERT INTO PatientAllergy " +
+                        "(allergyID, substance, reaction, status, patientID) " +
+                        "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE allergyID=allergyID, substance=substance, reaction=reaction, status=status, patientID=patientID");
+        //System.out.println("pa.getAllergyID() = " + pa.getAllergyID());
+        pAStatement.setString(1, this.getAllergyID());
+        pAStatement.setString(2, this.getSubstance());
+        pAStatement.setString(3, this.getReaction());
+        pAStatement.setString(4, this.getStatus());
+        pAStatement.setString(5, this.getPatientID());
+
+        pAStatement.executeUpdate();
     }
 }

@@ -1,9 +1,6 @@
 package edu.ucsb.cs;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -678,6 +675,32 @@ public class Patient
         updateState.executeUpdate("UPDATE Guardian SET state='" + state + "' WHERE guardianNo='" + guardianNo + "'");
         updateZip.executeUpdate("UPDATE Guardian SET zip='" + zip + "' WHERE guardianNo='" + guardianNo + "'");
         System.out.println("Address information updated.");
+    }
+    public void insertPatient(Connection connectHISDB) throws SQLException
+    {
+        PreparedStatement patientStmt = connectHISDB.prepareStatement(
+                "INSERT INTO Patient " +
+                        "(patientID, suffix, familyName, givenName, gender, birthTime, providerID, xmlHealthCreationDate, guardianNo, payerID, patientRole, policyType, purpose) " +
+                        " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientID=patientID, xmlHealthCreationDate=xmlHealthCreationDate,"+
+                        "suffix=suffix, familyName=familyName, givenName=givenName, gender=gender, birthTime=birthTime, providerID=providerID, guardianNo=guardianNo," +
+                        "payerID=payerID, patientRole=patientRole, policyType=policyType, purpose=purpose");
+        //System.out.println("patientID = " + p.getPatientID());
+        patientStmt.setString(1, this.getPatientID());
+        patientStmt.setString(2, this.getSuffix());
+        patientStmt.setString(3, this.getFamilyName());
+        patientStmt.setString(4, this.getGivenName());
+        patientStmt.setString(5, this.getGender());
+        patientStmt.setString(6, this.getBirthtime());
+        patientStmt.setString(7, this.getProviderId());
+        patientStmt.setString(8, this.getXmlCreationDate());
+        patientStmt.setString(9, this.getGuardianNo());
+        patientStmt.setString(10, this.getPayerID());
+        patientStmt.setString(11, this.getPatientRole());
+        patientStmt.setString(12, this.getPolicyType());
+        patientStmt.setString(13, this.getPurpose());
+
+        patientStmt.executeUpdate();
+
     }
 
 }

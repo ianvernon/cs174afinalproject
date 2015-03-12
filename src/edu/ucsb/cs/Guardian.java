@@ -1,5 +1,9 @@
 package edu.ucsb.cs;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 /**
  * Created by ianvernon on 3/3/15.
  */
@@ -56,5 +60,22 @@ public class Guardian {
 
     public String getZip() {
         return zip;
+    }
+    public void insertGuardian(Connection connectHISDB) throws SQLException
+    {
+        PreparedStatement guardianStmt = connectHISDB.prepareStatement(
+                "INSERT INTO Guardian " +
+                        "(guardianNo, givenName, familyName, phone, address, city, state, zip) " +
+                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE guardianNo=guardianNo, givenName=givenName, familyName=familyName,"+
+                        " phone=phone, address=address, city=city, state=state, zip=zip");
+        guardianStmt.setString(1, this.getGuardianNo());
+        guardianStmt.setString(2, this.getGivenName());
+        guardianStmt.setString(3, this.getFamilyName());
+        guardianStmt.setString(4, this.getPhone());
+        guardianStmt.setString(5, this.getAddress());
+        guardianStmt.setString(6, this.getCity());
+        guardianStmt.setString(7, this.getState());
+        guardianStmt.setString(8, this.getZip());
+        guardianStmt.executeUpdate();
     }
 }

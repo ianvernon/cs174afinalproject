@@ -236,4 +236,18 @@ public class Author
         prepStatement.setString(3, role);
         prepStatement.executeUpdate();
     }
+    public void insertAuthor(Connection connectHISDB) throws  SQLException
+    {
+        PreparedStatement authorStmt = connectHISDB.prepareStatement(
+                "INSERT INTO Author " +
+                        "(authorID, authorTitle, authorFirstName, authorLastName) "
+                        + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID, authorFirstName=authorFirstName, authorLastName=authorLastName, authorTitle=authorTitle");
+
+        authorStmt.setString(1, this.getAuthorID());
+        authorStmt.setString(2, this.getAuthorTitle());
+        authorStmt.setString(3, this.getAuthorFirstName());
+        authorStmt.setString(4, this.getAuthorLastName());
+
+        authorStmt.executeUpdate();
+    }
 }

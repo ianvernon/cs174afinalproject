@@ -1,5 +1,8 @@
 package edu.ucsb.cs;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 /**
@@ -61,5 +64,26 @@ public class LabTestReport
 
     public String getPatientID() {
         return patientID;
+    }
+    public void insertLabTestReport(Connection connectHISDB) throws SQLException
+    {
+        PreparedStatement ltrStmt = connectHISDB.prepareStatement(
+                "INSERT INTO LabTestReport " +
+                        "(LabTestResultID, PatientVisitID, LabTestPerformedDate, LabTestType, ReferenceRangeLow, ReferenceRangeHigh, TestResultValue, patientID) "
+                        + "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE LabTestResultID=LabTestResultID, PatientVisitID=PatientVisitID, LabTestType=LabTestType, ReferenceRangeLow=ReferenceRangeLow, ReferenceRangeHigh=ReferenceRangeHigh, TestResultValue=TestResultValue, patientID=patientID");
+
+
+
+        ltrStmt.setString(1, this.getLabTestResultID());
+        ltrStmt.setString(2, this.getPatientVisitID());
+        ltrStmt.setDate(3, this.getLabTestPerformedDate());
+        ltrStmt.setString(4, this.getLabTestType());
+        ltrStmt.setString(5, this.getReferenceRangeLow());
+        ltrStmt.setString(6, this.getReferenceRangeHigh());
+        ltrStmt.setString(7, this.getTestResultValue());
+        ltrStmt.setString(8, this.getPatientID());
+
+        ltrStmt.executeUpdate();
+
     }
 }

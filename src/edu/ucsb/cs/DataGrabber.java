@@ -163,44 +163,44 @@ public class DataGrabber
 
                     /********* INSURANCE COMPANY ************/
                     if(payerIdStr != null) {
-                        insertInsuranceCompany(connectHISDB, ic);
+                        ic.insertInsuranceCompany(connectHISDB);
                     }
                     /********* GUARDIAN ***********/
                     if(guardianNoStr != null)
                     {
-                        insertGuardian(connectHISDB, g);
+                        g.insertGuardian(connectHISDB);
                     }
                     /********* AUTHOR **********/
                     if(authorIdStr != null) {
-                        insertAuthor(connectHISDB, a);
+                        a.insertAuthor(connectHISDB);
                     }
                     /************* PATIENT ******************/
                     if(patientIdStr != null && guardianNoStr != null && payerIdStr != null)
                     {
-                        insertPatient(connectHISDB, p);
+                        p.insertPatient(connectHISDB);
                     }
                     /************** ASSIGNED **************/
                     if(authorIdStr != null && patientIdStr != null) {
-                        insertAssigned(connectHISDB, as);
+                        as.insertAssigned(connectHISDB);
                     }
                     /********* LABTESTREPORT ***********/
                     if(labTestResultIdStr != null && patientVisitIdStr != null && patientIdStr != null) {
-                        insertLabTestReport(connectHISDB, ltr);
+                        ltr.insertLabTestReport(connectHISDB);
                     }
                     /*********** PatientRelative ***********/
                     if(relativeIdStr != null && patientIdStr != null && diagnosis != null)
                     {
-                        insertPatientRelative(connectHISDB, pr);
+                        pr.insertPatientRelative(connectHISDB);
                     }
                     /******** PatientAllergy ************/
                     if(idStr != null && patientIdStr != null) {
                         //System.out.println("second case idStr access");
-                        insertPatientAllergy(connectHISDB, pa);
+                        pa.insertPatientAllergy(connectHISDB);
                     }
                     /***** PatientPlan *********/
                     if(planIdStr != null && patientIdStr != null)
                     {
-                        insertPatientPlan(connectHISDB, pp);
+                        pp.insertPatientPlan(connectHISDB);
                     }
                     /********* UPDATE LAST ACCESSED FOR CURRENT ROW IN RESULTSET *********/
                     PreparedStatement updateLastAccessed = sourceConnect.prepareStatement("UPDATE messages SET Last_Accessed='" + currentDateAndTime
@@ -260,44 +260,44 @@ public class DataGrabber
 
                         /********* INSURANCE COMPANY ************/
                         if(payerIdStr != null) {
-                            insertInsuranceCompany(connectHISDB, ic);
+                            ic.insertInsuranceCompany(connectHISDB);
                         }
                         /********* GUARDIAN ***********/
                         if(guardianNoStr != null)
                         {
-                            insertGuardian(connectHISDB, g);
+                            g.insertGuardian(connectHISDB);
                         }
                         /********* AUTHOR **********/
                         if(authorIdStr != null) {
-                            insertAuthor(connectHISDB, a);
+                            a.insertAuthor(connectHISDB);
                         }
                         /************* PATIENT ******************/
                         if(patientIdStr != null && guardianNoStr != null && payerIdStr != null)
                         {
-                            insertPatient(connectHISDB, p);
+                            p.insertPatient(connectHISDB);
                         }
                         /************** ASSIGNED **************/
                         if(authorIdStr != null && patientIdStr != null) {
-                            insertAssigned(connectHISDB, as);
+                            as.insertAssigned(connectHISDB);
                         }
                         /********* LABTESTREPORT ***********/
                         if(labTestResultIdStr != null && patientVisitIdStr != null && patientIdStr != null) {
-                            insertLabTestReport(connectHISDB, ltr);
+                            ltr.insertLabTestReport(connectHISDB);
                         }
                         /*********** PatientRelative ***********/
                         if(relativeIdStr != null && patientIdStr != null && diagnosis != null)
                         {
-                            insertPatientRelative(connectHISDB, pr);
+                            pr.insertPatientRelative(connectHISDB);
                         }
                         /******** PatientAllergy ************/
                         if(idStr != null && patientIdStr != null) {
                             //System.out.println("second case idStr access");
-                            insertPatientAllergy(connectHISDB, pa);
+                            pa.insertPatientAllergy(connectHISDB);
                         }
                         /***** PatientPlan *********/
                         if(planIdStr != null && patientIdStr != null)
                         {
-                            insertPatientPlan(connectHISDB, pp);
+                            pp.insertPatientPlan(connectHISDB);
                         }
                         /********* UPDATE LAST ACCESSED FOR CURRENT ROW IN RESULTSET *********/
                         PreparedStatement updateLastAccessed = sourceConnect.prepareStatement("UPDATE messages SET Last_Accessed='" + currentDateAndTime
@@ -316,152 +316,6 @@ public class DataGrabber
             ex.printStackTrace();
         }
     }
-    public static void insertInsuranceCompany(Connection connectHISDB, InsuranceCompany ic) throws SQLException
-    {
-
-        PreparedStatement icStmt = connectHISDB.prepareStatement(
-                "INSERT INTO InsuranceCompany " +
-                        "(payerID, name) VALUES(?, ?) ON DUPLICATE KEY UPDATE payerID=payerID, name=name");
-
-        icStmt.setString(1, ic.getPayerID());
-        icStmt.setString(2, ic.getName());
-
-        icStmt.executeUpdate();
-    }
-    public static void insertGuardian(Connection connectHISDB, Guardian g) throws SQLException
-    {
-        PreparedStatement guardianStmt = connectHISDB.prepareStatement(
-                "INSERT INTO Guardian " +
-                        "(guardianNo, givenName, familyName, phone, address, city, state, zip) " +
-                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE guardianNo=guardianNo, givenName=givenName, familyName=familyName,"+
-                        " phone=phone, address=address, city=city, state=state, zip=zip");
-        guardianStmt.setString(1, g.getGuardianNo());
-        guardianStmt.setString(2, g.getGivenName());
-        guardianStmt.setString(3, g.getFamilyName());
-        guardianStmt.setString(4, g.getPhone());
-        guardianStmt.setString(5, g.getAddress());
-        guardianStmt.setString(6, g.getCity());
-        guardianStmt.setString(7, g.getState());
-        guardianStmt.setString(8, g.getZip());
-        guardianStmt.executeUpdate();
-    }
-    public static void insertAuthor(Connection connectHISDB, Author a) throws  SQLException
-    {
-        PreparedStatement authorStmt = connectHISDB.prepareStatement(
-                "INSERT INTO Author " +
-                        "(authorID, authorTitle, authorFirstName, authorLastName) "
-                        + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID, authorFirstName=authorFirstName, authorLastName=authorLastName, authorTitle=authorTitle");
-
-        authorStmt.setString(1, a.getAuthorID());
-        authorStmt.setString(2, a.getAuthorTitle());
-        authorStmt.setString(3, a.getAuthorFirstName());
-        authorStmt.setString(4, a.getAuthorLastName());
-
-        authorStmt.executeUpdate();
-    }
-    public static void insertPatient(Connection connectHISDB, Patient p) throws SQLException
-    {
-        PreparedStatement patientStmt = connectHISDB.prepareStatement(
-                "INSERT INTO Patient " +
-                        "(patientID, suffix, familyName, givenName, gender, birthTime, providerID, xmlHealthCreationDate, guardianNo, payerID, patientRole, policyType, purpose) " +
-                        " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientID=patientID, xmlHealthCreationDate=xmlHealthCreationDate,"+
-                        "suffix=suffix, familyName=familyName, givenName=givenName, gender=gender, birthTime=birthTime, providerID=providerID, guardianNo=guardianNo," +
-                        "payerID=payerID, patientRole=patientRole, policyType=policyType, purpose=purpose");
-        //System.out.println("patientID = " + p.getPatientID());
-        patientStmt.setString(1, p.getPatientID());
-        patientStmt.setString(2, p.getSuffix());
-        patientStmt.setString(3, p.getFamilyName());
-        patientStmt.setString(4, p.getGivenName());
-        patientStmt.setString(5, p.getGender());
-        patientStmt.setString(6, p.getBirthtime());
-        patientStmt.setString(7, p.getProviderId());
-        patientStmt.setString(8, p.getXmlCreationDate());
-        patientStmt.setString(9, p.getGuardianNo());
-        patientStmt.setString(10, p.getPayerID());
-        patientStmt.setString(11, p.getPatientRole());
-        patientStmt.setString(12, p.getPolicyType());
-        patientStmt.setString(13, p.getPurpose());
-
-        patientStmt.executeUpdate();
-
-    }
-    public static void insertAssigned(Connection connectHISDB, Assigned as) throws SQLException
-    {
-        PreparedStatement assignedStmt = connectHISDB.prepareStatement(
-                "INSERT INTO Assigned " +
-                        "(authorID, patientID, participatingRole)" +
-                        " VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE authorID=authorID , patientID=patientID, participatingRole=participatingRole");
-
-        assignedStmt.setString(1, as.getAuthorID());
-        assignedStmt.setString(2, as.getPatientID());
-        assignedStmt.setString(3, as.getParticipatingRole());
-
-        assignedStmt.executeUpdate();
-    }
-    public static void insertLabTestReport(Connection connectHISDB, LabTestReport ltr) throws SQLException
-    {
-        PreparedStatement ltrStmt = connectHISDB.prepareStatement(
-                "INSERT INTO LabTestReport " +
-                        "(LabTestResultID, PatientVisitID, LabTestPerformedDate, LabTestType, ReferenceRangeLow, ReferenceRangeHigh, TestResultValue, patientID) "
-                        + "VALUES(?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE LabTestResultID=LabTestResultID, PatientVisitID=PatientVisitID, LabTestType=LabTestType, ReferenceRangeLow=ReferenceRangeLow, ReferenceRangeHigh=ReferenceRangeHigh, TestResultValue=TestResultValue, patientID=patientID");
 
 
-
-        ltrStmt.setString(1, ltr.getLabTestResultID());
-        ltrStmt.setString(2, ltr.getPatientVisitID());
-        ltrStmt.setDate(3, ltr.getLabTestPerformedDate());
-        ltrStmt.setString(4, ltr.getLabTestType());
-        ltrStmt.setString(5, ltr.getReferenceRangeLow());
-        ltrStmt.setString(6, ltr.getReferenceRangeHigh());
-        ltrStmt.setString(7, ltr.getTestResultValue());
-        ltrStmt.setString(8, ltr.getPatientID());
-
-        ltrStmt.executeUpdate();
-
-    }
-    public static void insertPatientRelative(Connection connectHISDB, PatientRelative pr) throws SQLException
-    {
-        PreparedStatement pRStatement = connectHISDB.prepareStatement(
-                "INSERT INTO PatientRelative " +
-                        "(relativeID, age, diagnosis, patientID, relationship) " +
-                        "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE relativeID=relativeID , patientID=patientID , diagnosis=diagnosis, age=age, relationship=relationship");
-
-        pRStatement.setString(1, pr.getRelativeID());
-        pRStatement.setString(2, pr.getAge());
-        pRStatement.setString(3, pr.getDiagnosis());
-        pRStatement.setString(4, pr.getPatientID());
-        pRStatement.setString(5, pr.getRelationship());
-
-        pRStatement.executeUpdate();
-
-    }
-    public static void insertPatientAllergy(Connection connectHISDB, PatientAllergy pa) throws SQLException
-    {
-        PreparedStatement pAStatement = connectHISDB.prepareStatement(
-                "INSERT INTO PatientAllergy " +
-                        "(allergyID, substance, reaction, status, patientID) " +
-                        "VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE allergyID=allergyID, substance=substance, reaction=reaction, status=status, patientID=patientID");
-        //System.out.println("pa.getAllergyID() = " + pa.getAllergyID());
-        pAStatement.setString(1, pa.getAllergyID());
-        pAStatement.setString(2, pa.getSubstance());
-        pAStatement.setString(3, pa.getReaction());
-        pAStatement.setString(4, pa.getStatus());
-        pAStatement.setString(5, pa.getPatientID());
-
-        pAStatement.executeUpdate();
-    }
-    public static void insertPatientPlan(Connection connectHISDB, PatientPlan pp)  throws SQLException
-    {
-        PreparedStatement planStatement = connectHISDB.prepareStatement(
-                "INSERT INTO PatientPlan " +
-                        "(planID, date, activity, patientID)  "  +
-                        "VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE planID=planID, date=date, activity=activity, patientID=patientID");
-        planStatement.setString(1, pp.getPlanID());
-        planStatement.setDate(2, pp.getDate());
-        //System.out.println("pp.getDate() = " + pp.getDate());
-        planStatement.setString(3, pp.getActivity());
-        planStatement.setString(4, pp.getPatientID());
-
-        planStatement.executeUpdate();
-    }
 }

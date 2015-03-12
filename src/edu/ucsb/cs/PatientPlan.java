@@ -1,5 +1,8 @@
 package edu.ucsb.cs;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Date;
 
 /**
@@ -38,6 +41,20 @@ public class PatientPlan
 
     public String getPatientID() {
         return patientID;
+    }
+    public void insertPatientPlan(Connection connectHISDB)  throws SQLException
+    {
+        PreparedStatement planStatement = connectHISDB.prepareStatement(
+                "INSERT INTO PatientPlan " +
+                        "(planID, date, activity, patientID)  "  +
+                        "VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE planID=planID, date=date, activity=activity, patientID=patientID");
+        planStatement.setString(1, this.getPlanID());
+        planStatement.setDate(2, this.getDate());
+        //System.out.println("pp.getDate() = " + pp.getDate());
+        planStatement.setString(3, this.getActivity());
+        planStatement.setString(4, this.getPatientID());
+
+        planStatement.executeUpdate();
     }
 }
 
