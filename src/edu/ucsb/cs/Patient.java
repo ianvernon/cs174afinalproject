@@ -390,6 +390,7 @@ public class Patient
         Statement statement = connectHISDB.createStatement();
         while(!date.matches("(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/((19|20)\\d\\d)"))
         {
+            String lineEater = birthtimeScanner.nextLine();
             System.out.println("Incorrect format. Try again.\nEnter date: (mm/dd/yyyy)");
             date = birthtimeScanner.next();
             if(date.equals("-1"))
