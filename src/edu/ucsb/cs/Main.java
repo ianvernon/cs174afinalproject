@@ -16,8 +16,9 @@ public class Main {
     //DONE
     public static void main(String[] args)
     {
-
-	    grabData("healthmessagesexchange3", "messages2", "HealthInformationSystem");
+        DataGrabber dg1 = new DataGrabber("healthmessagesexchange3", "messages", "HealthInformationSystem");
+        DataGrabber dg2 = new DataGrabber("healthmessagesexchange3", "messages2", "HealthInformationSystem");
+	    //grabData("healthmessagesexchange3", "messages2", "HealthInformationSystem");
         mainMenu();
 
 
@@ -37,21 +38,25 @@ public class Main {
     public static void mainMenu()
     {
         String privilegeLevel;
-        displayMainMenu();
+        //displayMainMenu();
         do {
+            displayMainMenu();
             privilegeLevel = inFromConsole.next();
 
             // patient case
             if (privilegeLevel.equals("0")) {
-                patientCase();
+                //patientCase();
+                PatientCase patientCase = new PatientCase();
             }
             // doctor case;
             else if (privilegeLevel.equals("1")) {
-                doctorCase();
+                //doctorCase();
+                DoctorCase doctorCase = new DoctorCase();
             }
             //admin case
             else if (privilegeLevel.equals("2")) {
-                adminCase();
+                //adminCase();
+                AdminCase adminCase = new AdminCase();
 
             }
             else if(privilegeLevel.equals("-1"))
@@ -90,18 +95,15 @@ public class Main {
      *
      * @return  string containing date in Month/Day/Year Hour:Day AM/PM format
      */
-    public static String getCurrentDate()
+    /* public static String getCurrentDate()
     {
-        /*Calendar c = Calendar.getInstance();
-        int currentYear = c.get(Calendar.YEAR);
-        int currentMonth = c.get(Calendar.MONTH)+1;
-        int currentDay = c.get(Calendar.DAY_OF_MONTH);*/
+
         DateFormat timeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
         String s = timeFormat.format(new java.util.Date());
         return s;
     }
     /******************************************PATIENT*******************************************/
-    public static void patientCase()
+    /*public static void patientCase()
     {
         try {
             //set up JDBC connections
@@ -800,6 +802,7 @@ public class Main {
     }
     //done
      /*****************************************DOCTOR********************************************/
+    /*
     public static void doctorCase(){
         try {
             //set up JDBC connections
@@ -1278,7 +1281,8 @@ public class Main {
      */
 
     /************GET DATA FROM UNIVERSAL TABLE****************/
-    public static void grabData(String sourceDb, String sourceTable, String destDb)
+    /*
+   public static void grabData(String sourceDb, String sourceTable, String destDb)
     {
         Connection sourceConnect = null;
         Statement statement = null;
@@ -1417,43 +1421,57 @@ public class Main {
                     //perform insertion of objects on tables
 
                     /********* INSURANCE COMPANY ************/
+    /*
                     if(payerIdStr != null) {
                         insertInsuranceCompany(connectHISDB, ic);
                     }
                     /********* GUARDIAN ***********/
+    /*
                      if(guardianNoStr != null) {
                          insertGuardian(connectHISDB, g);
                      }
                     /********* AUTHOR **********/
+    /*
                     if(authorIdStr != null) {
                         insertAuthor(connectHISDB, a);
                     }
+                    /*
                     /************* PATIENT ******************/
+       /*
                     if(patientIdStr != null) {
                         insertPatient(connectHISDB, p);
                     }
+
                     /************** ASSIGNED **************/
+    /*
                     if(authorIdStr != null && patientIdStr != null) {
                         insertAssigned(connectHISDB, as);
                     }
+
                     /********* LABTESTREPORT ***********/
+    /*
                     if(labTestResultIdStr != null && patientVisitIdStr != null) {
                         insertLabTestReport(connectHISDB, ltr);
                     }
                     /*********** PatientRelative ***********/
+    /*
                      if(relativeIdStr != null && patientIdStr != null && diagnosis != null) {
                          insertPatientRelative(connectHISDB, pr);
                      }
                     /******** PatientAllergy ************/
+    /*
                     if(idStr != null) {
                         insertPatientAllergy(connectHISDB, pa);
                     }
+
                     /***** PatientPlan *********/
+    /*
                     if(planIdStr != null)
                     {
                         insertPatientPlan(connectHISDB, pp);
                     }
                     /********* UPDATE LAST ACCESSED FOR CURRENT ROW IN RESULTSET *********/
+            /*
                     PreparedStatement updateLastAccessed = sourceConnect.prepareStatement("UPDATE messages SET Last_Accessed='" + currentDateAndTime
                             + "' WHERE patientId='" + patientIdStr+ "'");
 
@@ -1510,47 +1528,58 @@ public class Main {
                         //perform insertion of objects on tables
 
                         /********* INSURANCE COMPANY ************/
+    /*
                         if(payerIdStr != null) {
                             insertInsuranceCompany(connectHISDB, ic);
                         }
+
                         /********* GUARDIAN ***********/
+    /*
                         if(guardianNoStr != null)
                         {
                             insertGuardian(connectHISDB, g);
                         }
                         /********* AUTHOR **********/
+    /*
                         if(authorIdStr != null) {
                             insertAuthor(connectHISDB, a);
                         }
                         /************* PATIENT ******************/
+    /*
                         if(patientIdStr != null && guardianNoStr != null && payerIdStr != null)
                         {
                             insertPatient(connectHISDB, p);
                         }
                         /************** ASSIGNED **************/
+    /*
                         if(authorIdStr != null && patientIdStr != null) {
                             insertAssigned(connectHISDB, as);
                         }
                         /********* LABTESTREPORT ***********/
+    /*
                         if(labTestResultIdStr != null && patientVisitIdStr != null && patientIdStr != null) {
                             insertLabTestReport(connectHISDB, ltr);
                         }
                         /*********** PatientRelative ***********/
+    /*
                         if(relativeIdStr != null && patientIdStr != null && diagnosis != null)
                         {
                             insertPatientRelative(connectHISDB, pr);
                         }
                         /******** PatientAllergy ************/
+    /*
                         if(idStr != null && patientIdStr != null) {
                             //System.out.println("second case idStr access");
                             insertPatientAllergy(connectHISDB, pa);
                         }
                         /***** PatientPlan *********/
+    /*
                         if(planIdStr != null && patientIdStr != null)
                         {
                             insertPatientPlan(connectHISDB, pp);
                         }
                         /********* UPDATE LAST ACCESSED FOR CURRENT ROW IN RESULTSET *********/
+            /*
                         PreparedStatement updateLastAccessed = sourceConnect.prepareStatement("UPDATE messages SET Last_Accessed='" + currentDateAndTime
                                 + "' WHERE patientId='" + patientIdStr+ "'");
 
@@ -1714,5 +1743,5 @@ public class Main {
         planStatement.setString(4, pp.getPatientID());
 
         planStatement.executeUpdate();
-    }
+    }  */
 }

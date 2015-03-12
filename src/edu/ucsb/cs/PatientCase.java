@@ -1,151 +1,134 @@
 package edu.ucsb.cs;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Date;
+import java.sql.*;
 import java.util.Scanner;
 
-public class Patient
+/**
+ * Created by ianvernon on 3/12/15.
+ */
+public class PatientCase
 {
-    private String patientID; //check
-    private String patientRole; //check
-    private String givenName; //check
-    private String familyName; //check
-    private String suffix; //check
-    private String gender; // check
-    private String birthtime; //check
-    private String providerId; //check
-    private String xmlCreationDate; // check
-    private String guardianNo; // check
-    private String payerID; // check
-    private String policyType; // check
-    private String purpose; //chcek
-    public Patient(String ID, String patientrole, String givenName, String familyname, String suffix,
-               String gender, String birthtime, String providerid, String xmlCreationDate, String guardianNo,
-               String payerID, String policyType, String purpose)
+    public PatientCase()
     {
-        this.patientID = ID;
-        this.patientRole = patientrole;
-        this.givenName = givenName;
-        this.familyName = familyname;
-        this.suffix = suffix;
-        this.gender = gender;
-        this.birthtime = birthtime;
-        this.providerId = providerid;
-        this.xmlCreationDate = xmlCreationDate;
-        this.guardianNo = guardianNo;
-        this.payerID = payerID;
-        this.policyType = policyType;
-        this.purpose = purpose;
+        this.run();
     }
+    public void run()
+    {
+        try {
+            //set up JDBC connections
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connectHISDB;
 
-    public String getPatientID() {
-        return patientID;
-    }
-
-    public String getPatientRole() {
-        return patientRole;
-    }
-
-    public String getGivenName() {
-        return givenName;
-    }
-
-    public String getFamilyName() {
-        return familyName;
-    }
-
-    public String getSuffix() {
-        return suffix;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public String getBirthtime() {
-        return birthtime;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public String getXmlCreationDate() {
-        return xmlCreationDate;
-    }
-
-    public String getGuardianNo() {
-        return guardianNo;
-    }
-
-    public String getPayerID() {
-        return payerID;
-    }
-
-    public String getPolicyType() {
-        return policyType;
-    }
-
-    public String getPurpose() {
-        return purpose;
-    }
+            connectHISDB = DriverManager.getConnection("jdbc:mysql://localhost/HealthInformationSystem?"
+                    + "user=root&password=");
 
 
-    public void setPatientRole(String patientRole) {
-        this.patientRole = patientRole;
-    }
+            Scanner patientScanner = new Scanner(System.in);
+            String patientID;
+            System.out.println("******* PATIENT ACCESS *********");
+            System.out.println("For all cases, if you enter -1, the program will exit.");
+            System.out.println("Please enter your ID: ");
+            patientID = patientScanner.next();
+            if (patientID.equals("-1"))
+            {
+                System.out.println("*********EXITING PATIENT ACCESS**********");
+                //displayMainMenu();
+                return;
+            }
+            Patient p = getPatient(connectHISDB, patientID);
+            if(p == null)
+            {
+                System.out.println("Returning to main menu.");
+               // displayMainMenu();
+                return;
+            }
+            String patientMenuInput = "-2";
+            //view patient record
+            while(!patientMenuInput.equals("-1"))
+            {
+                System.out.println("Okay " + p.getGivenName() + " " + p.getFamilyName() + ", what would you like to do? Select from amongst the following options. Input -1 to exit");
+                displayPatientMenu();
+                patientMenuInput = patientScanner.next();
+                // view patient record
+                if(patientMenuInput.equals("1"))
+                {
+                    p.viewPatientRecord(connectHISDB);
+                }
+                // view authors assigned to this patient / recorded roles
+                else if(patientMenuInput.equals("2"))
+                {
+                    p.viewPatientAuthors(connectHISDB);
+                }
+                // view lab test reports
+                else if(patientMenuInput.equals("3"))
+                {
+                    p.viewPatientLabTestReport(connectHISDB);
+                }
+                // view allergies
+                else if(patientMenuInput.equals("4"))
+                {
+                    p.viewPatientAllergies(connectHISDB);
+                }
+                // view plan
+                else if(patientMenuInput.equals("5"))
+                {
+                    p.viewPatientPlanInfo(connectHISDB);
+                }
+                // view relatives
+                else if(patientMenuInput.equals("6"))
+                {
+                    p.viewPatientRelatives(connectHISDB);
+                }
+                //view my insurance company
+                else if(patientMenuInput.equals("7"))
+                {
+                    p.viewPatientInsuranceCompany(connectHISDB);
+                }
+                // view guardian information
+                else if(patientMenuInput.equals("8"))
+                {
+                    p.viewPatientGuardian(connectHISDB);
+                }
+                // edit patient information
+                else if(patientMenuInput.equals("9"))
+                {
+                    p.editPatientInfo(connectHISDB);
+                }
+                //edit guardian information
+                else if(patientMenuInput.equals("10"))
+                {
+                    p.editGuardianInfo(connectHISDB);
+                }
+                else if(patientMenuInput.equals("-1"))
+                {
+                    //do nothing
+                }
+                else
+                {
+                    System.out.println("Invalid option. Try again.");
+                }
+            }
+            System.out.println("*************EXITING PATIENT MENU**************");
+            //displayMainMenu();
 
-    public void setGivenName(String givenName) {
-        this.givenName = givenName;
+        }
+        catch(ClassNotFoundException ex)
+        {
+            System.out.println("Cannot find JDBC class. Exiting.");
+            return;
+        }
+        catch(SQLException ex)
+        {
+            ex.printStackTrace();
+            System.out.println("Error executing query. Exiting.");
+            return;
+        }
     }
-
-    public void setFamilyName(String familyName) {
-        this.familyName = familyName;
-    }
-
-    public void setSuffix(String suffix) {
-        this.suffix = suffix;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public void setBirthtime(String birthtime) {
-        this.birthtime = birthtime;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
-    public void setXmlCreationDate(String xmlCreationDate) {
-        this.xmlCreationDate = xmlCreationDate;
-    }
-
-    public void setGuardianNo(String guardianNo) {
-        this.guardianNo = guardianNo;
-    }
-
-    public void setPayerID(String payerID) {
-        this.payerID = payerID;
-    }
-
-    public void setPolicyType(String policyType) {
-        this.policyType = policyType;
-    }
-
-    public void setPurpose(String purpose) {
-        this.purpose = purpose;
-    }
-    public void viewPatientRecord(Connection connectHISDB) throws SQLException
+    public static void viewPatientRecord(Connection connectHISDB, Patient p) throws SQLException
     {
         // System.out.println("in 1 menu");
         Statement statement = connectHISDB.createStatement();
-        String patientID = this.getPatientID();
+        String patientID = p.getPatientID();
         //System.out.println("patientID = " + patientID);
         System.out.println("********** PATIENT INFO *************");
         ResultSet resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
@@ -161,11 +144,11 @@ public class Patient
         System.out.println("************ END PATIENT INFO ***********");
     }
     //DONE
-    public void viewPatientAuthors(Connection connectHISDB) throws SQLException
+    public static void viewPatientAuthors(Connection connectHISDB, Patient p) throws SQLException
     {
         Statement statement = connectHISDB.createStatement();
         System.out.println("*********** ASSIGNED AUTHORS TO PATIENT ************");
-        String patientID = this.getPatientID();
+        String patientID = p.getPatientID();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM Assigned WHERE patientID='" + patientID + "'");
         int i = 1;
         //print information about all authors assigned to patient
@@ -191,11 +174,11 @@ public class Patient
         }
     }
 
-    public void viewPatientLabTestReport(Connection connectHISDB) throws SQLException
+    public static void viewPatientLabTestReport(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("************** LAB TEST INFO ***************");
         Statement statement = connectHISDB.createStatement();
-        String patientID = this.getPatientID();
+        String patientID = p.getPatientID();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM LabTestReport WHERE patientID='" + patientID + "'");
         while(resultSet.next())
         {
@@ -208,11 +191,11 @@ public class Patient
             System.out.println("Test results: " + resultSet.getString("TestResultValue") + "\n");
         }
     }
-    public void viewPatientAllergies(Connection connectHISDB) throws SQLException
+    public static void viewPatientAllergies(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("*************** ALLERGY INFO ************");
         Statement statement = connectHISDB.createStatement();
-        String patientID = this.getPatientID();
+        String patientID = p.getPatientID();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PatientAllergy WHERE patientID='" + patientID + "'");
         while(resultSet.next())
         {
@@ -222,11 +205,11 @@ public class Patient
             System.out.println("Status: " + resultSet.getString("status"));
         }
     }
-    public void viewPatientRelatives(Connection connectHISDB) throws SQLException
+    public static void viewPatientRelatives(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("***************RELATIVE INFO**************");
         Statement statement = connectHISDB.createStatement();
-        String patientID = this.getPatientID();
+        String patientID = p.getPatientID();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PatientRelative WHERE patientID='" + patientID + "'");
         while(resultSet.next())
         {
@@ -235,21 +218,21 @@ public class Patient
             System.out.println("Age: " + resultSet.getString("age"));
         }
     }
-    public void viewPatientInsuranceCompany(Connection connectHISDB) throws SQLException
+    public static void viewPatientInsuranceCompany(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("********** INSURANCE COMPANY INFORMATION ************");
         Statement statement = connectHISDB.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM InsuranceCompany WHERE payerID='" + this.getPayerID() + "'");
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM InsuranceCompany WHERE payerID='" + p.getPayerID() + "'");
         while(resultSet.next())
         {
             System.out.println("Patient's insurance company is " + resultSet.getString("name"));
         }
         System.out.println("******** FINISH INSURANCE COMPANY INFORMATION************");
     }
-    public void viewPatientPlanInfo(Connection connectHISDB) throws SQLException
+    public static void viewPatientPlanInfo(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("*************** PLAN INFO ************");
-        String patientID = this.getPatientID();
+        String patientID = p.getPatientID();
         Statement statement = connectHISDB.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PatientPlan WHERE patientID='" + patientID + "'");
         while(resultSet.next())
@@ -257,11 +240,11 @@ public class Patient
             System.out.println("PlanID: " + resultSet.getString("planID") + "\n\tActivity: " + resultSet.getString("activity") + " performed on " + resultSet.getDate("date"));
         }
     }
-    public void viewPatientGuardian(Connection connectHISDB) throws SQLException
+    public static void viewPatientGuardian(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("********** GUARDIAN INFO **********");
         //resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
-        String guardianNo = this.getGuardianNo();
+        String guardianNo = p.getGuardianNo();
         Statement statement = connectHISDB.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM Guardian WHERE guardianNo='" + guardianNo + "'");
         while(resultSet.next())
@@ -272,7 +255,7 @@ public class Patient
             System.out.println("Phone: " + resultSet.getString("phone"));
         }
     }
-    public void editPatientSuffix(Connection connectHISDB) throws SQLException
+    public static void editPatientSuffix(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("Please enter suffix: ");
         Scanner suffixScanner = new Scanner(System.in);
@@ -288,12 +271,12 @@ public class Patient
             }
         }
         String updateSuffixQuery = "UPDATE Patient SET suffix='" + suffix + "' WHERE patientID='"
-                + this.getPatientID() + "'";
+                + p.getPatientID() + "'";
         int numRowsUpdated = statement.executeUpdate(updateSuffixQuery);
         if(numRowsUpdated > 0)
         {
             System.out.println("Update successful.");
-            this.setSuffix(suffix);
+            p.setSuffix(suffix);
 
         }
         else
@@ -301,7 +284,7 @@ public class Patient
             System.out.println("Update failed.");
         }
     }
-    public void editPatientGender(Connection connectHISDB) throws SQLException
+    public static void editPatientGender(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("Please enter gender (Male or Female): ");
         Scanner editGenderScanner = new Scanner(System.in);
@@ -317,19 +300,19 @@ public class Patient
             }
         }
         String updateGenderQuery = "UPDATE Patient SET gender='" + editGenderStr + "' WHERE patientID='"
-                + this.getPatientID() + "'";
+                + p.getPatientID() + "'";
         int numRowsUpdated = statement.executeUpdate(updateGenderQuery);
         if(numRowsUpdated > 0)
         {
             System.out.println("Update successful.");
-            this.setGender(editGenderStr);
+            p.setGender(editGenderStr);
         }
         else
         {
             System.out.println("Update failed.");
         }
     }
-    public void editPatientFamilyName(Connection connectHISDB) throws  SQLException
+    public static void editPatientFamilyName(Connection connectHISDB, Patient p) throws  SQLException
     {
         System.out.println("Please enter family (last) name: ");
         Scanner familyNameScanner = new Scanner(System.in);
@@ -344,19 +327,19 @@ public class Patient
                 return;
             }
         }
-        String updateLastNameQuery = "UPDATE Patient SET familyName='" + familyName + "' WHERE patientID='" + this.getPatientID() + "'";
+        String updateLastNameQuery = "UPDATE Patient SET familyName='" + familyName + "' WHERE patientID='" + p.getPatientID() + "'";
         int numRowsUpdated = statement.executeUpdate(updateLastNameQuery);
         if(numRowsUpdated > 0)
         {
             System.out.println("Update successful.");
-            this.setFamilyName(familyName);
+            p.setFamilyName(familyName);
         }
         else
         {
             System.out.println("Update failed.");
         }
     }
-    public void editPatientGivenName(Connection connectHISDB) throws  SQLException
+    public static void editPatientGivenName(Connection connectHISDB, Patient p) throws  SQLException
     {
         System.out.println("Please enter given (fist) name: ");
         Scanner givenNameScanner = new Scanner(System.in);
@@ -372,12 +355,12 @@ public class Patient
             }
 
         }
-        String firstNameUpdate = "UPDATE Patient SET givenName='" + givenName + "' WHERE patientID='" + this.getPatientID() + "'";
+        String firstNameUpdate = "UPDATE Patient SET givenName='" + givenName + "' WHERE patientID='" + p.getPatientID() + "'";
         int numRowsUpdated = statement.executeUpdate(firstNameUpdate);
         if(numRowsUpdated > 0)
         {
             System.out.println("Update successsful.");
-            this.setGivenName(givenName);
+            p.setGivenName(givenName);
         }
         else
         {
@@ -385,7 +368,7 @@ public class Patient
         }
     }
     //DONE
-    public void editPatientBirthtime(Connection connectHISDB) throws SQLException
+    public static void editPatientBirthtime(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("Enter date of birth: (mm/dd/yyyy)");
         Scanner birthtimeScanner = new Scanner(System.in);
@@ -414,7 +397,7 @@ public class Patient
             }
         }
         String combinedDateTime = date +  " " + time;
-        String updateStr = "UPDATE Patient SET birthTime='" + combinedDateTime + "' WHERE patientID='" + this.getPatientID() + "'";
+        String updateStr = "UPDATE Patient SET birthTime='" + combinedDateTime + "' WHERE patientID='" + p.getPatientID() + "'";
         int numRowsUpdated = statement.executeUpdate(updateStr);
         if(numRowsUpdated > 0)
         {
@@ -427,7 +410,7 @@ public class Patient
 
     }
     //DONE
-    public void editPatientInfo(Connection connectHISDB) throws SQLException
+    public static void editPatientInfo(Connection connectHISDB, Patient p) throws SQLException
     {
         Scanner editPatientScanner = new Scanner(System.in);
         System.out.println("Which of the following would you like to edit? Enter -1 to exit.");
@@ -440,28 +423,28 @@ public class Patient
         //edit suffix
         if(editPatientStr.equals("1"))
         {
-            this.editPatientSuffix(connectHISDB);
+            editPatientSuffix(connectHISDB, p);
         }
         // edit gender
         else if(editPatientStr.equals("2"))
         {
-            this.editPatientGender(connectHISDB);
+            editPatientGender(connectHISDB, p);
         }
         // edit family name
         else if(editPatientStr.equals("3"))
         {
-            this.editPatientFamilyName(connectHISDB);
+            editPatientFamilyName(connectHISDB, p);
         }
         // edit given name
         else if(editPatientStr.equals("4"))
         {
-            this.editPatientGivenName(connectHISDB);
+            editPatientGivenName(connectHISDB, p);
 
         }
         // edit birth time
         else if(editPatientStr.equals("5"))
         {
-            this.editPatientBirthtime(connectHISDB);
+            editPatientBirthtime(connectHISDB, p);
         }
         else if(editPatientStr.equals("-1"))
         {
@@ -473,7 +456,7 @@ public class Patient
         }
     }
     //DONE
-    public void editGuardianInfo(Connection connectHISDB) throws SQLException
+    public static void editGuardianInfo(Connection connectHISDB, Patient p) throws SQLException
     {
         // ask what they want to edit - provided number to enter to escape, loop until they do so
         // make sure length of string is not over 100 characters
@@ -489,30 +472,30 @@ public class Patient
         //  given name
         if(editGuardianStr.equals("1"))
         {
-            this.editGuardianGivenName(connectHISDB);
+            editGuardianGivenName(connectHISDB, p);
         }
         // last name
         else if(editGuardianStr.equals("2"))
         {
-            this.editGuardianFamilyName(connectHISDB);
+            editGuardianFamilyName(connectHISDB, p);
 
         }
         // phone number
         else if(editGuardianStr.equals("3"))
         {
-            this.editGuardianPhone(connectHISDB);
+            editGuardianPhone(connectHISDB, p);
         }
         // address
         else if(editGuardianStr.equals("4"))
         {
-            this.editGuardianAddress(connectHISDB);
+            editGuardianAddress(connectHISDB, p);
         }
         else if(editGuardianStr.equals("-1"))
         {
             System.out.println("Exiting and returning to Patient access menu.");
         }
     }
-    public void editGuardianGivenName(Connection connectHISDB) throws SQLException
+    public static void editGuardianGivenName(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("Enter given name: ");
         Scanner editGuardianScanner = new Scanner(System.in);
@@ -522,7 +505,7 @@ public class Patient
         {
             return;
         }
-        String updateGuardianStr = "UPDATE Guardian SET givenName='" + givenName + "' WHERE guardianNo='" + this.getGuardianNo() + "'";
+        String updateGuardianStr = "UPDATE Guardian SET givenName='" + givenName + "' WHERE guardianNo='" + p.getGuardianNo() + "'";
         int numRowsUpdated = statement.executeUpdate(updateGuardianStr);
         if(numRowsUpdated > 0)
         {
@@ -535,7 +518,7 @@ public class Patient
         }
     }
     //DONE
-    public void editGuardianFamilyName(Connection connectHISDB) throws SQLException
+    public static void editGuardianFamilyName(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("Enter family name: ");
         Scanner editGuardianScanner = new Scanner(System.in);
@@ -545,7 +528,7 @@ public class Patient
         {
             return;
         }
-        String updateGuardianStr = "UPDATE Guardian SET familyName='" + familyName + "' WHERE guardianNo='" + this.getGuardianNo() + "'";
+        String updateGuardianStr = "UPDATE Guardian SET familyName='" + familyName + "' WHERE guardianNo='" + p.getGuardianNo() + "'";
         int numRowsUpdated = statement.executeUpdate(updateGuardianStr);
         if(numRowsUpdated > 0)
         {
@@ -556,7 +539,7 @@ public class Patient
             System.out.println("Update failed.");
         }
     }
-    public void editGuardianPhone(Connection connectHISDB) throws SQLException
+    public static void editGuardianPhone(Connection connectHISDB, Patient p) throws SQLException
     {
         System.out.println("Enter phone number (format (123) 456-7890: ");
         Scanner editGuardianScanner = new Scanner(System.in);
@@ -576,7 +559,7 @@ public class Patient
                 return;
             }
         }
-        String updateGuardianStr = "UPDATE Guardian SET phone='" + phone + "' WHERE guardianNo='" + this.getGuardianNo() + "'";
+        String updateGuardianStr = "UPDATE Guardian SET phone='" + phone + "' WHERE guardianNo='" + p.getGuardianNo() + "'";
         int numRowsUpdated = statement.executeUpdate(updateGuardianStr);
         if(numRowsUpdated > 0)
         {
@@ -587,7 +570,7 @@ public class Patient
             System.out.println("Update failed.");
         }
     }
-    public void editGuardianAddress(Connection connectHISDB) throws SQLException
+    public static void editGuardianAddress(Connection connectHISDB, Patient p) throws SQLException
     {
         Statement updateAddress = connectHISDB.createStatement();
         Statement updateCity = connectHISDB.createStatement();
@@ -595,7 +578,7 @@ public class Patient
         Statement updateZip = connectHISDB.createStatement();
 
         Scanner addressScanner = new Scanner(System.in);
-        String guardianNo = this.getGuardianNo();
+        String guardianNo = p.getGuardianNo();
         String address, streetNum, streetName, city, state, zip;
         // get street number
         System.out.println("Enter street number: ");
@@ -680,4 +663,51 @@ public class Patient
         System.out.println("Address information updated.");
     }
 
+    public static Patient getPatient(Connection connectHISDB, String patientID) throws SQLException
+    {
+        Statement statement = connectHISDB.createStatement();
+        Scanner patientScanner = new Scanner(System.in);
+        //get tuple from Patient table that corresponds to input patient ID
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
+        // check if result set has anything in it, loop until this occurs or exit with -1
+        while(!resultSet.isBeforeFirst() )
+        {
+            System.out.println("Provided patient ID is not valid. Please try again or enter -1 to exit.");
+            patientID = patientScanner.next();
+            if(patientID.equals("-1"))
+            {
+                System.out.println("Exiting from getting patient information.");
+                return null;
+            }
+            resultSet = statement.executeQuery("SELECT * FROM Patient WHERE patientID='" + patientID + "'");
+        }
+
+        // put information in patient object for easier access throughout query
+        resultSet.next();
+        Patient p = new Patient(patientID, resultSet.getString("patientRole"), resultSet.getString("givenName"),
+                resultSet.getString("familyName"), resultSet.getString("suffix"), resultSet.getString("gender"),
+                resultSet.getString("birthTime"),resultSet.getString("providerid"), resultSet.getString("xmlHealthCreationDate"),
+                resultSet.getString("guardianNo"), resultSet.getString("payerID"), resultSet.getString("policyType"),
+                resultSet.getString("purpose"));
+        return p;
+    }
+    //done
+    //done
+    public static void displayPatientMenu()
+    {
+        System.out.println("********* PATIENT MENU *********");
+        System.out.println("1: View my Patient record.");
+        System.out.println("2: View Authors assigned to me and the role they recorded.");
+        System.out.println("3: View my previous Lab Test Reports.");
+        System.out.println("4: View my allergies.");
+        System.out.println("5: View my plan.");
+        System.out.println("6: View my relatives.");
+        System.out.println("7: View my insurance company.");
+        System.out.println("8: View my guardian information.");
+        System.out.println("9: Edit my information in Patient table.");
+        System.out.println("10: Edit my Guardian information.");
+
+
+    }
+    //done
 }
